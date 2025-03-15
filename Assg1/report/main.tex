@@ -10,10 +10,9 @@
 \usepackage{siunitx}
 \usepackage{subcaption}
 \usepackage{amsmath}
-\usepackage[a4paper, margin=1in]{geometry}
 \usepackage{longtable}
 
-\lstset{basicstyle=\ttfamily, frame=single}
+
 \usepackage{xcolor} % For colored code
 \usepackage{listings}
 \lstset{
@@ -48,7 +47,8 @@ Assignment 1: Classical ML Methods}
 \begin{document}
 \maketitle
 
-\begin{center}
+\begin{table}[h]
+    \centering
     \begin{tabular}{ccc}
         \toprule
         \textbf{Members} & \textbf{Section} & \textbf{ID} \\
@@ -58,7 +58,12 @@ Assignment 1: Classical ML Methods}
         Youssef Hesham Abd-El-Fatah & 4 & 9211451 \\
         \bottomrule
     \end{tabular}
-\end{center}
+    \caption{Team Members}
+    \label{tab:team}
+\end{table}
+
+
+\newpage
 
 \section*{Part 1: Regressing Problems}
 \subsection*{Problem 1}
@@ -670,6 +675,8 @@ Removing outliers enhances model accuracy and reliability by focusing on typical
     \end{tabular}
 \end{table}
 
+
+\newpage
 \section{Part 2: classical ML modeling}
 \subsection{Introduction}
 
@@ -768,6 +775,7 @@ Based on the analysis of the summary table, several key insights can be drawn re
 In summary, the results highlight the effectiveness of SVM with the RBF kernel on PCA features (0.9765, 5.19s) for maximum accuracy, making it ideal for performance-focused applications. For a balance of accuracy and speed, K-means with 32 clusters on DCT features (0.9590, 2.14s) is a strong contender. PCA boosts accuracy at a higher computational cost, while DCT offers efficiency with competitive performance, providing flexibility based on application needs.
 
 
+\newpage
 \section*{Part 3}
 \subsection*{Pipeline 1}
 
@@ -1153,4 +1161,5 @@ Aurélien Géron, \emph{Hands-On Machine Learning with Scikit-Learn, Keras, and 
 
 
 \end{document}
+
 
