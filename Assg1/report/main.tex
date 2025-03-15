@@ -372,7 +372,7 @@ By substituting with \( x = 1997 \) in the quadratic model equation:
 y = 189153301.6160 - 189436.1222 \cdot x^1 + 47.4319 \cdot x^2 
 \]
 Prediction for 1997: 8395 insured persons as shown in figure (5)
-
+\newpage
 \subsubsection*{Comparison of Model Fitting with and without Outliers}
 \textbf{Impact of Outliers on Model Fit}
 
@@ -400,7 +400,6 @@ Prediction for 1997: 8395 insured persons as shown in figure (5)
         \item With the outlier, the predicted number of insured persons in 1997 could be biased due to the anomalous data point.
         \item After removing the outlier, the prediction should be more reliable, as it is based on a trend that better represents the majority of the data.
     \end{itemize}
-\newpage
     \item \textbf{Visual Interpretation:}
     \begin{itemize}
         \item The scatter plots show a clearer trend after outlier removal.
@@ -416,11 +415,11 @@ Prediction for 1997: 8395 insured persons as shown in figure (5)
     \item \textbf{Improved interpretability:} Without extreme variations, the trend becomes more evident and interpretable.
 \end{itemize}
 
-\textbf{Numerical Comparison}
+\textbf{Numerical Comparison}\\
 
-\textbf{\( R^2 \) Values of the Models}
+\textbf{\( R^2 \) Values of the Models}\\
 
-\begin{table}[h!]
+\begin{table}[H]
     \centering
     \begin{tabular}{lccc}
         \toprule
@@ -435,9 +434,9 @@ Prediction for 1997: 8395 insured persons as shown in figure (5)
     \label{tab:r2_comparison_params}
 \end{table}
 
-\textbf{Predictions for 1997}
+\textbf{Predictions for 1997}\\
 
-\begin{table}[h!]
+\begin{table}[H]
     \centering
     \begin{tabular}{lc}
         \toprule
@@ -471,7 +470,7 @@ The numerical comparison clearly shows that outliers can distort both the goodne
     \includegraphics[width=0.8\textwidth]{7.png}
     \caption{3D Scatterplot Oil vs Temp vs Insulation}
 \end{figure}
-\newpage
+
 \begin{adjustwidth}{0cm}{0cm}
 \uline{Comment:} 
 \end{adjustwidth}
@@ -493,6 +492,7 @@ The 3D scatter plot integrates temperature and insulation to show their combined
         \label{fig:oil_vs_insulation}
     \end{minipage}
 \end{figure}
+\newpage
 \begin{adjustwidth}{0cm}{0cm}
 \uline{Comment}
 \end{adjustwidth}
@@ -641,10 +641,33 @@ equation in point a (figure 10) where x1 refers to the temperature and x2 refers
 insulation. For linear model both results are equal to 403.22 gallons also in quadratic
 model both results are exact with value = 407.35 gallons
 
-\newpage
 
 \section*{Comparing Results With and Without Outliers}
+\begin{table}[h!]
+    \centering
+    \caption{R\textsuperscript{2} Values Comparison}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Model Type} & \textbf{R\textsuperscript{2} With Outliers} & \textbf{R\textsuperscript{2} Without Outliers} \\
+        \midrule
+        Linear Model & 0.6967 & 0.9606 \\
+        Quadratic Model & 0.9742 & 0.9769 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
+\begin{table}[h!]
+    \centering
+    \caption{Predictions Comparison}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Model Type} & \textbf{Predictions With Outliers} & \textbf{Predictions Without Outliers} \\
+        \midrule
+        Linear Model & Oil: 357.7 gal & Oil: 403.22 gal \\
+        Quadratic Model & Oil: 410.52 gal & Oil: 407.35 gal \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 \checkmark \textbf{Data Distribution:}
 \begin{itemize}
     \item \textit{With Outliers}: The original scatter plots show dispersed points, especially at high insulation and extreme oil use, suggesting anomalies like measurement errors or unique conditions.
@@ -673,31 +696,7 @@ model both results are exact with value = 407.35 gallons
 \end{adjustwidth}
 Removing outliers enhances model accuracy and reliability by focusing on typical behavior. The cleaned data better supports the quadratic model, capturing nonlinear interactions between temperature and insulation, making it more suitable for predictions in real-world heating scenarios.
 
-\begin{table}[h!]
-    \centering
-    \caption{R\textsuperscript{2} Values Comparison}
-    \begin{tabular}{lcc}
-        \toprule
-        \textbf{Model Type} & \textbf{R\textsuperscript{2} With Outliers} & \textbf{R\textsuperscript{2} Without Outliers} \\
-        \midrule
-        Linear Model & 0.6967 & 0.9606 \\
-        Quadratic Model & 0.9742 & 0.9769 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
 
-\begin{table}[h!]
-    \centering
-    \caption{Predictions Comparison}
-    \begin{tabular}{lcc}
-        \toprule
-        \textbf{Model Type} & \textbf{Predictions With Outliers} & \textbf{Predictions Without Outliers} \\
-        \midrule
-        Linear Model & Oil: 357.7 gal & Oil: 403.22 gal \\
-        Quadratic Model & Oil: 410.52 gal & Oil: 407.35 gal \\
-        \bottomrule
-    \end{tabular}
-\end{table}
 
 
 \newpage
@@ -733,10 +732,10 @@ Multiple clusters per class (\( k = 1, 4, 16, 32 \)) are employed for both DCT a
 Support Vector Machines (SVM) are supervised learning models that classify data by finding the optimal hyperplane separating classes with the widest possible margin. For non-linearly separable data, SVM employs kernel functions to transform features into a higher-dimensional space where linear separation becomes feasible.
 
 \subsubsection{Nonlinear Kernel: RBF}  
-The Radial Basis Function (RBF) kernel, a nonlinear kernel, measures similarity between data points using Euclidean distance. This enables SVM to form complex decision boundaries, effectively capturing intricate patterns in data, such as the diverse shapes of handwritten digits.\\
+The Radial Basis Function (RBF) kernel, a nonlinear kernel, measures similarity between data points using Euclidean distance. This enables SVM to form complex decision boundaries, effectively capturing intricate patterns in data, such as the diverse shapes of handwritten digits.\\ \\
 \textbf{Why RBF Was Chosen}  
 We selected the RBF kernel for its flexibility in handling the nonlinear relationships in the ReducedMNIST dataset. Its adaptability to varying digit styles enhances classification accuracy, making it preferable over other kernels like polynomial for this task.\\
-\newpage
+
 \subsection{Results}
 \begin{table}[h]
     \centering
