@@ -11,7 +11,11 @@
 \usepackage{subcaption}
 \usepackage{amsmath}
 \usepackage{longtable}
-
+\usepackage{changepage} % For adjustwidth environment
+\documentclass{article}
+\usepackage{amssymb} % For checkmark symbols (\checkmark)
+\usepackage{booktabs} % For professional tables
+\usepackage{array}
 
 \usepackage{xcolor} % For colored code
 \usepackage{listings}
@@ -157,23 +161,25 @@ r^2 = \frac{SS - SSE}{SS} =\frac{104080000 - 67479969.70}{104080000} = 0.35165
     \includegraphics[width=0.8\textwidth]{1.png}
     \caption{Scatterplot with outlier (1993 marked in red)}
 \end{figure}
-
+\newpage
+\begin{adjustwidth}{0cm}{0cm} % Adjust left and right margins by 2cm each
 \uline{Comment:} This initial plot shows all data points from 1987 to 1996 with each year labeled. The 1993 data point (value of 800) is clearly marked with a red circle, visually identifying it as an outlier. We can see the overall declining trend in insured persons over the years, but the 1993 data point breaks this pattern dramatically, suggesting it could be an error or an exceptional circumstance that year.
+\end{adjustwidth}
 
 
-\subsubsection*{A) Fit linear, quadratic, and cubic, by comparing the values of 2 R . Determine the function that best fits the data}
-If the gain in R2 is not high enough, it is better to take the model with a lower number of parameters.
+\subsubsection*{A) Fit linear, quadratic, and cubic, by comparing the values of $R^2$ . Determine the function that best fits the data}
+If the gain in $R^2$is not high enough, it is better to take the model with a lower number of parameters.
     \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{2.png}
     \caption{each model R-squared value and equation after removing outlier}
     \label{fig:enter-label}
     \end{figure}
-
+    
+\begin{adjustwidth}{0cm}{0cm}
 \uline{Comment:} 
-Figure 2 illustrates that manual calculations for the linear model produce results consistent with those from MATLAB. Additionally, when comparing the  values across the linear, quadratic, and cubic models, the cubic model (poly3) stands out as the best fit for the data due to its highest  value.
-
-The higher  values suggest that the model provides a better explanation of the data's variation. This validates the removal of the outlier, leading to a more dependable predictive model. 
+Figure 2 illustrates that manual calculations for the linear model produce results consistent with those from MATLAB. Additionally, When comparing the $R^2$ values across the linear, quadratic, and cubic models for the full dataset before removing outliers, the cubic model (poly3) achieves the highest $R^2$ value at 0.4941, indicating it explains the most variance in the data, followed by the quadratic model at 0.4540, and the linear model at 0.3517. However, $R^2$ alone doesn’t account for model complexity, which can lead to overfitting—where a model fits noise (like the 1993 outlier of 800) rather than the underlying trend. To address this, and following the hint that ``if the gain in $R^2$ is not high enough, it is better to take the model with a lower number of parameters,'' we introduced an $R^2$ gain threshold of 0.05. This heuristic was chosen to determine whether the improvement in fit justifies adding more parameters, particularly given the small sample size of 10 data points. The gain in $R^2$ from quadratic (3 parameters) to cubic (4 parameters) is only 0.0401, falling below this threshold. This modest increase—representing just a 4\% improvement in explained variance—suggests the cubic model’s extra term doesn’t capture a meaningful pattern beyond what quadratic already achieves. Consequently, the quadratic model stands out as the best fit, striking a balance between explanatory power and simplicity. It effectively captures the general downward trend with some curvature, while avoiding the overfitting risk of the cubic model, which could be overly sensitive to noise in this limited dataset.
+\end{adjustwidth}
 
 \subsubsection*{B) Graph the function of best fit with the scatterplot of the data.}
 
@@ -192,11 +198,13 @@ extreme point, reducing their accuracy for the overall trend.
 \subsubsection*{C) With the best function found in part (a), predict the average number of insured persons in 1997}
 By substituting \( x = 1997 \) in the poly3 model equation:
 \[
-y = 122812398586.560547 - 184917955.273112 \cdot x^1 + 92810.111730 \cdot x^2 - 15.527117 \cdot x^3
+y = 564697173.2656 - 566433.1060 \cdot x^1 + 142.0455 \cdot x^2 
 \]
+\begin{adjustwidth}{0cm}{0cm}
+Prediction for 1997: 8811 insured persons as shown in figure (2)\\
+\end{adjustwidth}
 
-Prediction for 1997: 7045  insured persons as shown in figure (2)
-
+\begin{adjustwidth}{0cm}{0cm}
 \uline{\textbf{After Removing the Outlier:}}
 Outliers in the dataset of insured persons are identified by checking if any value is more
 than two standard deviations away from the average. The process starts by computing
@@ -206,10 +214,11 @@ twice the standard deviation or exceeds the average plus twice the standard devi
 This approach relies on the empirical rule, where approximately 95% of data in a
 normal distribution is expected to lie within two standard deviations of the average.
 Any data point outside this range is considered an outlier and is excluded from the
-dataset, along with its corresponding year, for further analysis.
-
+dataset, along with its corresponding year, for further analysis.\\ \\
+\end{adjustwidth}
+\begin{adjustwidth}{0cm}{0cm}
 \textbf{Hand Analysis}
-
+\end{adjustwidth}
 \begin{table}[h!]
     \centering
     \caption{Hand Analysis}
@@ -296,26 +305,28 @@ r^2 = \frac{S^2 - SSE}{S^2}
 \[
 \ r^2 = \frac{22855000 - 2148875}{22855000} = 0.9059779
 \]
-
+\begin{adjustwidth}{0cm}{0cm}
 The significantly higher value \(r^2\)supports the decision to remove the outlier, resulting in
-a more reliable predictive model.
+a more reliable predictive model. 
+\end{adjustwidth}
 
-
+\newpage
+\begin{adjustwidth}{0cm}{0cm}
 \textbf{MATLAB Results}
-
+\end{adjustwidth}
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{4.png}
     \caption{Scatterplot after removing outliers}
 \end{figure} 
-
+\begin{adjustwidth}{0cm}{0cm}
 \uline{Comment}
-
-After removing the 1993 data point as as 800 insure persons was less than μ − 2σ, this plot
+\end{adjustwidth}
+After removing the 1993 data point as 800 insure persons was less than μ − 2σ, this plot
 shows a much more consistent trend. The y-axis is adjusted to better visualize the pattern in
 the remaining data. With the outlier removed, we can see a clearer decreasing trend in the
 number of insured persons over the decade, which appears to follow a non-linear pattern.
-
+\newpage
 \subsubsection*{A) Fit linear, quadratic, and cubic, by comparing the values of 2 R . Determine the
 function that best fits the data.}
 
@@ -326,17 +337,16 @@ function that best fits the data.}
     \includegraphics[width=0.8\textwidth]{5.png}
     \caption{Each Model R-Squared Value and Equation from MATLAB after removing outlier}
 \end{figure} 
-
+\begin{adjustwidth}{0cm}{0cm}
 \uline{Comment}
-
+\end{adjustwidth}
 Figure 5 illustrates that manual calculations for the linear model produce results consistent
-with those from MATLAB. Additionally, when comparing the \(r^2\) values across the linear,
-quadratic, and cubic models, the cubic model (poly3) stands out as the best fit for the data
-due to its highest \(r^2\) value.
+with those from MATLAB. Additionally, When comparing the $R^2$ values across the linear, quadratic, and cubic models for the cleaned dataset after removing the 1993 outlier, the cubic model (poly3) achieves the highest $R^2$ value at 0.9819, indicating it explains the most variance in the data, followed by the quadratic model at 0.9539, and the linear model at 0.9060. However, $R^2$ alone doesn’t account for model complexity, which can lead to overfitting—where a model fits residual noise rather than the underlying trend, even in a cleaner dataset. To address this, and following the hint that ``if the gain in $R^2$ is not high enough, it is better to take the model with a lower number of parameters,'' we introduced an $R^2$ gain threshold of 0.05. This heuristic was chosen to determine whether the improvement in fit justifies adding more parameters, particularly given the small sample size of 9 data points after outlier removal. The gain in $R^2$ from quadratic (3 parameters) to cubic (4 parameters) is only 0.0280, falling below this threshold. This modest increase—representing just a 2.8\% improvement in explained variance—suggests the cubic model’s extra term doesn’t capture a meaningful pattern beyond what quadratic already achieves. Consequently, the quadratic model stands out as the best fit, striking a balance between explanatory power and simplicity. It effectively captures the smoother downward trend with some curvature in the cleaned data, while avoiding the overfitting risk of the cubic model, which could be overly sensitive to minor variations in this limited dataset.
+\begin{adjustwidth}{0cm}{0cm}
 The higher \(r^2\) values suggest that the model provides a better explanation of the data's
 variation. This validates the removal of the outlier, leading to a more dependable predictive
 model.
-
+\end{adjustwidth}
 \subsubsection*{B) Graph the function of best fit with the scatterplot of the data}
 
 
@@ -356,12 +366,12 @@ Using this improved model, we can predict the number of insured persons for 1997
 \subsubsection*{With the best function found in part (a), predict the average number of insured
 persons in 1997.}
 
-By substituting with \( x = 1997 \) in the poly3 model equation:
+By substituting with \( x = 1997 \) in the quadratic model equation:
 
 \[
-y = 122812398586.560547 - 184917955.273112 \cdot x^1 + 92810.111730 \cdot x^2 - 15.527117 \cdot x^3
+y = 189153301.6160 - 189436.1222 \cdot x^1 + 47.4319 \cdot x^2 
 \]
-
+Prediction for 1997: 8395 insured persons as shown in figure (5)
 
 \subsubsection*{Comparison of Model Fitting with and without Outliers}
 \textbf{Impact of Outliers on Model Fit}
@@ -390,7 +400,7 @@ y = 122812398586.560547 - 184917955.273112 \cdot x^1 + 92810.111730 \cdot x^2 - 
         \item With the outlier, the predicted number of insured persons in 1997 could be biased due to the anomalous data point.
         \item After removing the outlier, the prediction should be more reliable, as it is based on a trend that better represents the majority of the data.
     \end{itemize}
-
+\newpage
     \item \textbf{Visual Interpretation:}
     \begin{itemize}
         \item The scatter plots show a clearer trend after outlier removal.
@@ -412,15 +422,17 @@ y = 122812398586.560547 - 184917955.273112 \cdot x^1 + 92810.111730 \cdot x^2 - 
 
 \begin{table}[h!]
     \centering
-    \begin{tabular}{lcc}
+    \begin{tabular}{lccc}
         \toprule
-        \textbf{Model Type} & \textbf{\( R^2 \) With Outliers} & \textbf{\( R^2 \) Without Outliers} \\
+        \textbf{Model Type} & \textbf{Parameters} & \textbf{\( R^2 \) With Outliers} & \textbf{\( R^2 \) Without Outliers} \\
         \midrule
-        Linear Model & 0.3517 & 0.9060 \\
-        Quadratic Model & 0.4540 & 0.9539 \\
-        Cubic Model & 0.4941 & 0.9819 \\
+        Linear Model    & 2 & 0.3517 & 0.9060 \\
+        Quadratic Model & 3 & 0.4540 & 0.9539 \\
+        Cubic Model     & 4 & 0.4941 & 0.9819 \\
         \bottomrule
     \end{tabular}
+    \caption{Comparison of \( R^2 \) values for linear, quadratic, and cubic models applied to the full dataset (with outliers) and the cleaned dataset (without outliers), with the number of parameters indicating model complexity.}
+    \label{tab:r2_comparison_params}
 \end{table}
 
 \textbf{Predictions for 1997}
@@ -431,22 +443,26 @@ y = 122812398586.560547 - 184917955.273112 \cdot x^1 + 92810.111730 \cdot x^2 - 
         \toprule
         \textbf{Scenario} & \textbf{Predicted Number of Insured Persons} \\
         \midrule
-        With Outliers & 11,966 \\
-        Without Outliers & 7,045 \\
+        With Outliers & 8811 \\
+        Without Outliers & 8395 \\
         \bottomrule
     \end{tabular}
+    \caption{Predicted number of insured persons for 1997 using the quadratic model, selected as the best fit for both the full dataset (with outliers) and the cleaned dataset (without outliers).}
+    \label{tab:predictions_1997}
 \end{table}
-
+\begin{adjustwidth}{0cm}{0cm}
 \textbf{Comment}
-Before removing the outlier, the cubic model achieved the highest \( R^2 \) (e.g., 0.95), suggesting it was trying to account for the extreme deviation. However, after removing the outlier, the quadratic model showed the best performance (e.g., 0.98), indicating a smoother trend without the undue influence of the anomalous data point.
-
+\end{adjustwidth}
+Before removing the outlier, the cubic model achieved the highest \( R^2 \) of 0.4941, suggesting it was attempting to account for the extreme deviation caused by the 1993 value of 800, compared to the quadratic model’s \( R^2 \) of 0.4540 and the linear model’s 0.3517. However, the gain in \( R^2 \) from quadratic to cubic was only 0.0401, below the 0.05 threshold set to avoid unnecessary complexity, leading us to favor the quadratic model as the best fit pre-outlier removal. After removing the outlier, the cubic model again showed the highest \( R^2 \) at 0.9819, followed by the quadratic model at 0.9539 and the linear model at 0.9060. Yet, the gain from quadratic to cubic was just 0.0280, still below the 0.05 threshold. Thus, the quadratic model demonstrated the best performance for the cleaned data, indicating a smoother downward trend with some curvature, effectively capturing the pattern without the undue influence of the anomalous data point or the overfitting risk of the cubic model.\\
+\begin{adjustwidth}{0cm}{0cm}
 \textbf{Conclusion}
+\end{adjustwidth}
 The numerical comparison clearly shows that outliers can distort both the goodness-of-fit metrics (like \( R^2 \)) and the model’s predictions. By removing the outlier, we achieve:
 
 \begin{itemize}
     \item \textbf{Higher and more consistent \( R^2 \) values,} indicating better model performance.
     \item \textbf{A shift to a simpler yet more reliable model} (quadratic rather than cubic).
-    \item \textbf{More trustworthy predictions} for future data points.
+    \item \textbf{More trustworthy predictions} for future data points. \\
 \end{itemize}
 \subsection*{Problem 2}
 \subsubsection*{MATLAB Results}
@@ -455,7 +471,10 @@ The numerical comparison clearly shows that outliers can distort both the goodne
     \includegraphics[width=0.8\textwidth]{7.png}
     \caption{3D Scatterplot Oil vs Temp vs Insulation}
 \end{figure}
+\newpage
+\begin{adjustwidth}{0cm}{0cm}
 \uline{Comment:} 
+\end{adjustwidth}
 The 3D scatter plot integrates temperature and insulation to show their combined effect on oil consumption. It reveals a complex relationship where low temperatures and thin insulation tend to increase oil use. Points far from the main cluster (e.g., high insulation with high oil use) suggest outliers that may skew model fits.
 
 \begin{figure}[H]
@@ -474,9 +493,10 @@ The 3D scatter plot integrates temperature and insulation to show their combined
         \label{fig:oil_vs_insulation}
     \end{minipage}
 \end{figure}
-
+\begin{adjustwidth}{0cm}{0cm}
 \uline{Comment}
-Thee first 2D scatter plots visualizes the relationship between average temperature and
+\end{adjustwidth}
+The first 2D scatter plot visualizes the relationship between average temperature and
 heating oil consumption. A downward trend suggests that colder temperatures increase oil
 usage, consistent with heating demands. Some points deviate from the trend, hinting at
 potential outliers possibly due to extreme insulation levels or measurement errors.
@@ -494,12 +514,13 @@ function that best fits the data.}
     \includegraphics[width=0.8\textwidth]{10.png}
     \caption{Each Model R-Squared Value and Equation from MATLAB}
 \end{figure}
-
+\begin{adjustwidth}{0cm}{0cm}
 \uline{Comment}
-
-As shown in Figure~10, by comparing \( r^2 \) in linear and quadratic models, the model that best fits the data is the quadratic model as it has the highest value of \( r^2 \).
-
+\end{adjustwidth}
+As shown in Figure~10, by comparing \( r^2 \) in linear and quadratic models, the model that best fits the data is the quadratic model as it has the highest value of \( r^2 \). \\
+\begin{adjustwidth}{0cm}{0cm}
 Also, the equations are shown where:
+\end{adjustwidth}
 \[
 x_3 = x_1 \times x_2, \quad x_4 = x_1^2 \text{ and } x_5 = x_2^2
 \]
@@ -509,8 +530,9 @@ x_3 = x_1 \times x_2, \quad x_4 = x_1^2 \text{ and } x_5 = x_2^2
     \includegraphics[width=0.8\textwidth]{11.png}
     \caption{Best fit curve (quadratic model) along with scatterplots}
 \end{figure}
-
+\begin{adjustwidth}{0cm}{0cm}
 \uline{Comment}
+\end{adjustwidth}
 The plot in figure 11 overlays the best-fitting model (determined by \(R^2\)) as a semi-
 transparent surface on the original 3D scatter. The surface aligns closely with most data
 points, indicating a reasonable fit, though deviations near outliers (e.g., high insulation
@@ -532,6 +554,7 @@ implemented using the built-in function in MATLAB and for the second method, the
 equation in point a (figure 10) where x1 refers to the temperature and x2 refers to the
 insulation. For linear model both results are equal to 357.7 gallons also in quadratic
 model both results are exact with value = 410.52 gallons
+\newpage
 
 \textbf{After Removing the Outlier:}
 \begin{figure}[h!]
@@ -558,12 +581,15 @@ Insulation no outlier}
     \end{minipage}
 \end{figure}
 
-\uline{Comment}
+\begin{adjustwidth} {0cm}{0cm}
+    \uline{Comment}
+\end{adjustwidth}
+\begin{adjustwidth} {0cm}{0cm}
 After removing outliers, these cleaned scatter plots (temperature, insulation, and 3D)
 present a tighter clustering of points. The temperature vs oil plot shows a stronger
 negative trend, and the 3D view highlights more consistent interactions between
 temperature and insulation, improving model reliability.
-
+\end{adjustwidth}
 
 \subsubsection*{A) Fit linear, quadratic, and cubic, by comparing the values of 2 R . Determine the
 function that best fits the data.}
@@ -573,12 +599,13 @@ function that best fits the data.}
     \includegraphics[width=0.8\textwidth]{16.png}
     \caption{Each Model R-Squared Value and Equation from MATLAB no outlier}
 \end{figure}
-
+\begin{adjustwidth} {0cm}{0cm}
 \uline{Comment}
-
-As shown in Figure~16, by comparing \( r^2 \) in linear and quadratic models, the model that best fits the data is the quadratic model as it has the highest value of \( r^2 \).
-
+\end{adjustwidth}
+As shown in Figure~16, by comparing \( r^2 \) in linear and quadratic models, the model that best fits the data is the quadratic model as it has the highest value of \( r^2 \).\\
+\begin{adjustwidth} {0cm}{0cm}
 Also, the equations are shown where:
+\end{adjustwidth}
 \[
 x_3 = x_1 \times x_2, \quad x_4 = x_1^2 \text{ and } x_5 = x_2^2
 \]
@@ -587,8 +614,9 @@ x_3 = x_1 \times x_2, \quad x_4 = x_1^2 \text{ and } x_5 = x_2^2
     \includegraphics[width=0.8\textwidth]{17.png}
     \caption{Best fit curve (quadratic model) along with scatterplots No outlier}
 \end{figure}
-
+\begin{adjustwidth} {0cm}{0cm}
 \uline{Comment}
+\end{adjustwidth}
 The cleaned data plot with the best fit surface shows a tighter alignment between the
 model and data points compared to the original. The surface smoother reflects the
 removal of outliers, enhancing the model’s ability to predict oil consumption accurately
@@ -603,9 +631,9 @@ temperature is 15 Fahrenheit and the insulation is 5 attic insulations inches}
     \includegraphics[width=0.8\textwidth]{18.png}
     \caption{prediction of oil with temp = 15 and insulation = 5 no outlier}
 \end{figure}
-
+\begin{adjustwidth} {0cm}{0cm}
 \uline{Comment}
-
+\end{adjustwidth}
 Figure 18 shows the output of the prediction of oil with the temperature = 15 ℉ and the
 insulation used = 5 inches for each model using two methods. The first method is
 implemented using the built-in function in MATLAB and for the second method, the third
@@ -613,12 +641,7 @@ equation in point a (figure 10) where x1 refers to the temperature and x2 refers
 insulation. For linear model both results are equal to 403.22 gallons also in quadratic
 model both results are exact with value = 407.35 gallons
 
-\documentclass{article}
-\usepackage{amssymb} % For checkmark symbols (\checkmark)
-\usepackage{booktabs} % For professional tables
-\usepackage{array}
-
-\begin{document}
+\newpage
 
 \section*{Comparing Results With and Without Outliers}
 
@@ -645,8 +668,9 @@ model both results are exact with value = 407.35 gallons
     \item \textit{With Outliers}: The best fit surface deviates from some points, especially outliers, indicating overfitting or underfitting in those regions.
     \item \textit{Without Outliers}: The surface aligns more closely with the cleaned data, providing a smoother and more representative fit across the temperature-insulation range.
 \end{itemize}
-
+\begin{adjustwidth}{0cm}{0cm}
 \checkmark \textbf{Conclusion:}
+\end{adjustwidth}
 Removing outliers enhances model accuracy and reliability by focusing on typical behavior. The cleaned data better supports the quadratic model, capturing nonlinear interactions between temperature and insulation, making it more suitable for predictions in real-world heating scenarios.
 
 \begin{table}[h!]
@@ -683,27 +707,24 @@ Removing outliers enhances model accuracy and reliability by focusing on typical
  This part focuses on applying classical machine learning techniques to the ReducedMNIST dataset, a simplified version of the widely-used MNIST handwritten digit dataset. This section explores the development and evaluation of classification models using two distinct feature extraction methods---Discrete Cosine Transform (DCT) and Principal Component Analysis (PCA)---and two classifiers: K-means clustering and Support Vector Machines (SVM). The ReducedMNIST dataset comprises 10,000 training images (1,000 examples per digit from 0 to 9) and 2,000 test images (200 examples per digit), providing a balanced yet manageable framework for experimentation.
 
 \subsection{DCT}
-The Discrete Cosine Transform (DCT) is a widely used mathematical technique that transforms a signal or image from the spatial domain to the frequency domain. It represents data as a sum of cosine functions oscillating at different frequencies, making it particularly effective for compressing and analyzing image data by emphasizing significant frequency components while discarding less important ones. In the context of image processing, DCT is commonly employed in standards like JPEG compression, where it helps reduce dimensionality while preserving essential visual information.
-
+The Discrete Cosine Transform (DCT) is a widely used mathematical technique that transforms a signal or image from the spatial domain to the frequency domain. It represents data as a sum of cosine functions oscillating at different frequencies, making it particularly effective for compressing and analyzing image data by emphasizing significant frequency components while discarding less important ones. In the context of image processing, DCT is commonly employed in standards like JPEG compression, where it helps reduce dimensionality while preserving essential visual information.\\
 In this assignment, DCT is utilized as a feature extraction method for the ReducedMNIST dataset. Each 28x28 pixel image is transformed using a 2D DCT, and the top-left 15x15 block of the resulting coefficient matrix (totaling 225 dimensions) is retained as the feature vector. This reduction from 784 dimensions to 225 is based on the assumption that the most significant frequency components, which capture the structural patterns of handwritten digits, are concentrated in the lower-frequency region.
 
 \subsection{PCA}
-Principal Component Analysis (PCA) is a dimensionality reduction technique that transforms high-dimensional data into a lower-dimensional space by identifying the directions (principal components) that maximize variance. These components are linear combinations of the original features, ordered by the amount of variance they capture, allowing for the retention of essential information while discarding noise or redundant dimensions. According to Géron \cite{geron2019}, PCA is particularly valuable in machine learning for reducing computational complexity and mitigating the curse of dimensionality, making it a popular preprocessing step for classification tasks.
-
+Principal Component Analysis (PCA) is a dimensionality reduction technique that transforms high-dimensional data into a lower-dimensional space by identifying the directions (principal components) that maximize variance. These components are linear combinations of the original features, ordered by the amount of variance they capture, allowing for the retention of essential information while discarding noise or redundant dimensions. According to Géron \cite{geron2019}, PCA is particularly valuable in machine learning for reducing computational complexity and mitigating the curse of dimensionality, making it a popular preprocessing step for classification tasks.\\
 In this assignment, PCA is applied to the ReducedMNIST dataset to extract features that retain at least 95\% of the total variance present in the original 784-dimensional pixel space. Each 28x28 image is flattened into a 784-dimensional vector, and PCA is fitted to the training data to determine the optimal number of components. The resulting transformed features is 262 dimension.
 
 
 \subsection{K-means}
 
-K-means clustering is an unsupervised learning algorithm that partitions a dataset into a predefined number of clusters by iteratively assigning data points to the nearest cluster centroid and updating the centroids based on the mean of the assigned points. In this assignment, K-means is adapted for a semi-supervised classification task on the ReducedMNIST dataset by training separate models for each digit class (0 to 9). Unlike traditional clustering, where the goal is to discover natural groupings, here K-means is used to create multiple centroids per digit class, enabling a nearest-centroid classification approach. Specifically, test samples are assigned to the digit class whose closest centroid (across all classes) yields the minimum distance, effectively treating the centroids as prototypes for each digit.
-
+K-means clustering is an unsupervised learning algorithm that partitions a dataset into a predefined number of clusters by iteratively assigning data points to the nearest cluster centroid and updating the centroids based on the mean of the assigned points. In this assignment, K-means is adapted for a semi-supervised classification task on the ReducedMNIST dataset by training separate models for each digit class (0 to 9). Unlike traditional clustering, where the goal is to discover natural groupings, here K-means is used to create multiple centroids per digit class, enabling a nearest-centroid classification approach. Specifically, test samples are assigned to the digit class whose closest centroid (across all classes) yields the minimum distance, effectively treating the centroids as prototypes for each digit.\\
 Multiple clusters per class (\( k = 1, 4, 16, 32 \)) are employed for both DCT and PCA features to capture the variability within each digit class, such as different handwriting styles or orientations. Using a single cluster per class (\( k = 1 \)) would reduce K-means to a simple averaging of each digit's training data, potentially missing important sub-patterns and leading to poor generalization. By increasing the number of clusters, the model can represent a broader range of variations within each digit, improving its ability to match diverse test samples and enhancing inter-class discrimination. For instance, digit "0" might have clusters representing round, oval, or slightly open variations, which collectively provide a more robust representation than a single centroid. The performance of each configuration is evaluated using classification accuracy and processing time on the test set, with the best-performing models (based on accuracy) further analyzed via confusion matrices to understand classification errors across the 10 digit classes.
 
 % Placeholder for the figure
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{Kmeans example.png} % Replace with actual figure file
-    \caption{Clustring Example}
+    \includegraphics[width=0.8\textwidth]{Kmeans example.png}
+    \caption{Clustering Example}
     \label{fig:kmeans_clusters}
 \end{figure}
 
@@ -712,15 +733,11 @@ Multiple clusters per class (\( k = 1, 4, 16, 32 \)) are employed for both DCT a
 Support Vector Machines (SVM) are supervised learning models that classify data by finding the optimal hyperplane separating classes with the widest possible margin. For non-linearly separable data, SVM employs kernel functions to transform features into a higher-dimensional space where linear separation becomes feasible.
 
 \subsubsection{Nonlinear Kernel: RBF}  
-The Radial Basis Function (RBF) kernel, a nonlinear kernel, measures similarity between data points using Euclidean distance. This enables SVM to form complex decision boundaries, effectively capturing intricate patterns in data, such as the diverse shapes of handwritten digits.
-\newline
-
-
+The Radial Basis Function (RBF) kernel, a nonlinear kernel, measures similarity between data points using Euclidean distance. This enables SVM to form complex decision boundaries, effectively capturing intricate patterns in data, such as the diverse shapes of handwritten digits.\\
 \textbf{Why RBF Was Chosen}  
-We selected the RBF kernel for its flexibility in handling the nonlinear relationships in the ReducedMNIST dataset. Its adaptability to varying digit styles enhances classification accuracy, making it preferable over other kernels like polynomial for this task.
-
+We selected the RBF kernel for its flexibility in handling the nonlinear relationships in the ReducedMNIST dataset. Its adaptability to varying digit styles enhances classification accuracy, making it preferable over other kernels like polynomial for this task.\\
+\newpage
 \subsection{Results}
-
 \begin{table}[h]
     \centering
     \caption{Performance comparison of K-means clustering and SVM classifiers on DCT and PCA features.}
@@ -771,9 +788,7 @@ Based on the analysis of the summary table, several key insights can be drawn re
     \item \textbf{Trade-offs}:  
     A clear trade-off exists between accuracy and processing time. K-means with fewer clusters (e.g., 1 or 4) offers faster computation (0.73s–1.32s) but lower accuracy (0.8680–0.9225). SVM with the RBF kernel maximizes accuracy (0.9710–0.9765) but requires more time (3.39s–5.19s). The linear kernel, despite moderate accuracy (0.9385–0.9440), takes longer (1.63s–2.18s) due to the nonlinear data, making it less practical. PCA enhances accuracy but increases computational cost, while DCT provides a balanced alternative.
 \end{itemize}
-
 In summary, the results highlight the effectiveness of SVM with the RBF kernel on PCA features (0.9765, 5.19s) for maximum accuracy, making it ideal for performance-focused applications. For a balance of accuracy and speed, K-means with 32 clusters on DCT features (0.9590, 2.14s) is a strong contender. PCA boosts accuracy at a higher computational cost, while DCT offers efficiency with competitive performance, providing flexibility based on application needs.
-
 
 \newpage
 \section*{Part 3}
@@ -859,8 +874,7 @@ In summary, the results highlight the effectiveness of SVM with the RBF kernel o
 \end{enumerate}
 
 \paragraph{comment on results:}
-The results from Pipeline 1 demonstrate the effectiveness of using clustering and iterative refinement to reduce manual labeling effort while maintaining high performance. The training accuracy increases gradually from 0.8967 at iteration 0 to about 0.9051 by iteration 9, while the test accuracy improves from 0.9360 at iteration 0 to a peak of 0.9425 at iteration 3, after which it slightly declines and plateaus around 0.9400. This indicates that significant gains in generalization performance are achieved early in the iterative process, and further iterations yield diminishing returns. 
-
+The results from Pipeline 1 demonstrate the effectiveness of using clustering and iterative refinement to reduce manual labeling effort while maintaining high performance. The training accuracy increases gradually from 0.8967 at iteration 0 to about 0.9051 by iteration 9, while the test accuracy improves from 0.9360 at iteration 0 to a peak of 0.9425 at iteration 3, after which it slightly declines and plateaus around 0.9400. This indicates that significant gains in generalization performance are achieved early in the iterative process, and further iterations yield diminishing returns. \\
 Moreover, the pipeline achieves this performance with a drastically reduced manual labeling time. By manually labeling only 5 images per cluster for 100 clusters, the total human effort is limited to 5000 seconds (approximately 1.39 hours), compared to an estimated 100,000 seconds (27.78 hours) required for full manual labeling of all 10,000 images. Overall, these findings underscore the efficiency of the proposed approach, balancing reduced human intervention with high accuracy.
 
 
@@ -947,6 +961,7 @@ Moreover, the pipeline achieves this performance with a drastically reduced manu
     \end{table}
 
     \noindent
+    \newpage
     \textbf{Explanation:} 
     \begin{itemize}
         \item \textbf{Pipeline 2:}  
@@ -963,10 +978,8 @@ Moreover, the pipeline achieves this performance with a drastically reduced manu
 \end{enumerate}
 
 \paragraph{Comment on Results:}
-The iterative results for Pipeline 2 show a steady improvement in test accuracy over the first few iterations. The test accuracy increases from 0.9030 in Iteration 1 to a peak of 0.9250 in Iteration 6, indicating that the iterative refinement using pseudo-labels from SVM-1 is effective in enhancing the model's performance. Beyond Iteration 6, the accuracy shows a slight decline (0.9245, 0.9240, and 0.9235 in Iterations 7 to 9), suggesting that additional iterations may offer diminishing returns or may even introduce slight overfitting.
-
-The final labeled training accuracy of 0.9854 demonstrates that the combined dataset of manually labeled and pseudo-labeled data is highly effective for training. However, the final unlabeled (auto-labeled) accuracy of 0.6101 indicates that the most uncertain samples—which remain unlabeled—are challenging for the model, and their inclusion via pseudo-labeling does not fully overcome the inherent uncertainty.
-
+The iterative results for Pipeline 2 show a steady improvement in test accuracy over the first few iterations. The test accuracy increases from 0.9030 in Iteration 1 to a peak of 0.9250 in Iteration 6, indicating that the iterative refinement using pseudo-labels from SVM-1 is effective in enhancing the model's performance. Beyond Iteration 6, the accuracy shows a slight decline (0.9245, 0.9240, and 0.9235 in Iterations 7 to 9), suggesting that additional iterations may offer diminishing returns or may even introduce slight overfitting.\\
+The final labeled training accuracy of 0.9854 demonstrates that the combined dataset of manually labeled and pseudo-labeled data is highly effective for training. However, the final unlabeled (auto-labeled) accuracy of 0.6101 indicates that the most uncertain samples—which remain unlabeled—are challenging for the model, and their inclusion via pseudo-labeling does not fully overcome the inherent uncertainty.\\
 Moreover, the human labeling effort in Pipeline 2 is drastically reduced compared to full manual labeling. With a total estimated manual time of 4000 seconds (approximately 1.11 hours) for manually labeling only 400 images (40 per class), the process offers substantial savings compared to the 27.78 hours required to label the full dataset manually. This demonstrates the effectiveness of the pipeline in balancing model performance with reduced manual intervention.
 
 
@@ -976,16 +989,12 @@ Moreover, the human labeling effort in Pipeline 2 is drastically reduced compare
 \begin{enumerate}
     \item \textbf{Initial Seed Set:}  
     A small seed set is created by randomly selecting 40 examples per class from the ReducedMNIST training set (total of 400 images). These images are manually labeled.
-    
     \item \textbf{Active Learning Query Strategy:}  
     The remaining unlabeled pool is maintained, and in each iteration, an SVM classifier is trained on the current labeled data. The classifier computes uncertainty scores (using the absolute value of the decision function) for the unlabeled samples. The most uncertain samples (e.g., top 50) are then selected.
-    
     \item \textbf{Manual Labeling of Uncertain Samples:}  
     The selected uncertain samples are sent for manual labeling. Their labels are added to the training set.
-    
     \item \textbf{Iterative Refinement:}  
     The SVM classifier is retrained on the enlarged labeled set (initial seed plus newly queried samples) and evaluated on the test set. This process is repeated until the maximum number of iterations is reached or further accuracy improvements become negligible.
-    
     \item \textbf{Time Estimation:}  
     The manual labeling time is calculated by summing the time for labeling the initial seed and the queried uncertain samples (assuming 10 seconds per image). This is then compared to the full manual labeling time (labeling all training images at 10 seconds each).
 \end{enumerate}
@@ -1056,6 +1065,7 @@ Moreover, the human labeling effort in Pipeline 2 is drastically reduced compare
     \end{table}
     
     \noindent
+    \newpage
     \textbf{Explanation:} 
     \begin{itemize}
         \item \textbf{Active Learning Pipeline:}  
@@ -1161,5 +1171,3 @@ Aurélien Géron, \emph{Hands-On Machine Learning with Scikit-Learn, Keras, and 
 
 
 \end{document}
-
-
