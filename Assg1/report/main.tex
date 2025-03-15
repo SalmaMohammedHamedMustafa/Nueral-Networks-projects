@@ -799,9 +799,19 @@ In summary, the results highlight the effectiveness of SVM with the RBF kernel o
     \item \textbf{Clustering:} Clustered the data into 100 clusters using the K-means algorithm from the \texttt{sklearn} library.
     \item \textbf{Initial Labeling:} For each cluster, 5 images were randomly selected and manually inspected. The most frequent label among these images was assigned to the entire cluster.
     \item \textbf{Initial SVM Training:} An SVM classifier was trained using the initially labeled data and used to predict new labels for the images. 
-    \item \textbf{Iterative Refinement:} In each iteration, the labels from the previous SVM were used to train the next SVM classifier, with an early stopping condition and a patience margin.  
+
+    \item \textbf{Iterative Refinement:} In each iteration, the labels from the previous SVM were used to train the next SVM classifier, with an early stopping condition and a patience margin.
+    
+    \textbf{NOTE}: in the Iterative Refinement step I tried enhancing the image features to generate better clusters but it didn't lead to accuracy improvement.
     \item \textbf{Manual vs.\ Pipeline:} Calculated the required human labeling time with and without the pipeline.
+    
 \end{enumerate}
+
+
+  
+    
+    
+
 
 \subsubsection*{2. Results}
 \begin{enumerate}
@@ -1170,3 +1180,4 @@ Aurélien Géron, \emph{Hands-On Machine Learning with Scikit-Learn, Keras, and 
 
 
 \end{document}
+
