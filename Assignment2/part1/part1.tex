@@ -1,7 +1,5 @@
 \documentclass[a4paper,12pt]{article}
 \usepackage[utf8]{inputenc}
-\usepackage{geometry}
-\geometry{margin=1in}
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{booktabs}
@@ -11,32 +9,36 @@
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{float}
+\usepackage{booktabs}   % For professional-looking tables
+\usepackage{multirow}   % For merged rows
+\usepackage{float}      % For precise table positioning with [H]
+\usepackage[a4paper, margin=1in]{geometry}
 
-\title{Part1 :Digit Classification on Reduced MNIST Dataset Using MLP and CNN}
+\title{Part 1 :Digit Classification on Reduced MNIST Dataset Using MLP and CNN}
 
 \begin{document}
 
 \maketitle
 
 \section{Introduction}
-The Reduced MNIST dataset, a subset of the MNIST dataset, consists of 1000 training examples and 200 testing examples per digit (0-9), with images of size 28x28 pixels in grayscale. This assignment is divided into two parts:
+The reduced MNIST dataset, a subset of the MNIST dataset, consists of 1000 training examples and 200 testing examples per digit (0-9), with images of size 28 x 28 pixels in grayscale. This assignment is divided into two parts:
 
 \begin{itemize}
-    \item \textbf{Part 1 (MLP with Feature Extraction):} Implement an MLP with 1, 3, or 5 hidden layers, using features extracted via Principal Component Analysis (PCA), Discrete Cosine Transform (DCT), and Autoencoders (AE).
-    \item \textbf{Part 2 (CNN with LeNet-5 Variants):} Train a CNN based on the LeNet-5 architecture, adjusting the structure to fit 28x28 images, and explore at least two variations in hyperparameters.
+    \item \textbf{Part 1 (MLP with Feature Extraction):} Implement an MLP with 1, 3, or 5 hidden layers, using features extracted by Principal Component Analysis (PCA), Discrete Cosine Transform (DCT), and Autoencoders (AE).
+    \item \textbf{Part 2 (CNN with LeNet-5 variants):} Train a CNN based on the LeNet-5 architecture, adjust the structure to fit 28x28 images, and explore at least two variations in hyperparameters.
 \end{itemize}
 
-The objective is to compare the performance of these models in terms of accuracy, training time, and testing time, and to provide insights into the impact of architectural choices.
+The objective is to compare the performance of these models in terms of accuracy, training time, and testing time, and to provide information on the impact of architectural choices.
 
 \section{Methodology}
 
 \subsection{Dataset}
-The Reduced MNIST dataset contains:
+The reduced MNIST dataset contains:
 \begin{itemize}
     \item \textbf{Training Set:} 1000 examples per digit (10,000 total).
     \item \textbf{Testing Set:} 200 examples per digit (2,000 total).
 \end{itemize}
-Images are 28x28 pixels in grayscale, and labels correspond to digits 0-9.
+The images are 28x28 pixels in grayscale and the labels correspond to digits 0-9.
 
 \subsection{Part 1: Multi-Layer Perceptron (MLP) with Feature Extraction}
 In this part, we implemented an MLP with 1, 2, and 3 hidden layers, using features extracted from the images via three methods:
@@ -47,8 +49,8 @@ In this part, we implemented an MLP with 1, 2, and 3 hidden layers, using featur
 \end{itemize}
 The MLP architectures were trained for 40 epochs with a batch size of 64, using the Adam optimizer.
 
-\subsection{Part 2: Convolutional Neural Network (CNN) with LeNet-5 Variants}
-We implemented a CNN based on the LeNet-5 architecture, adjusted for 28x28 images. The base model consists of:
+\subsection{Part 2: Convolutional Neural Network (CNN) with LeNet-5 variants}
+We implemented a CNN based on the LeNet-5 architecture, adjusted for 28x28 images. The base model consists of the following.
 \begin{itemize}
     \item Two convolutional layers (6 and 16 filters, 5x5 kernels, ReLU activation).
     \item Average pooling layers (2x2, stride 2).
@@ -65,7 +67,7 @@ The model was trained for 40 epochs with a batch size of 64, using the Adam opti
     \item \textbf{Variation 7 (Dropout):} Added dropout layers for regularization (0.25 after convolutional layers, 0.5 after the first dense layer).
     \item \textbf{Variation 8 (Batch Normalization):} Added batch normalization after convolutional and dense layers.
     \item \textbf{Variation 9 (SGD Optimizer):} Used SGD with momentum (learning rate 0.01, momentum 0.9) instead of Adam.
-    \item \textbf{Variation 10 (Smaller Kernel):} Used 3x3 kernels instead of 5x5.
+    \item \textbf{Variation 10 (Smaller Kernel):} Used 3 x 3 kernels instead of 5 x 5.
 \end{itemize}
 
 \section{Results}
@@ -127,69 +129,115 @@ The CNN models were trained with the base LeNet-5 architecture and 10 variations
     \item \textbf{Training and Testing Time Variations:} Training time varied significantly, with the increased filters model being the slowest (20.08s) due to higher computational complexity, and the smaller kernel model being the fastest (9.60s). Testing time (inference time for the entire test set) ranged from 288.19ms (fewer layers) to 417.19ms (tanh activation), showing that architectural choices impact inference speed.
 \end{itemize}
 \newpage
-\section{Comparison of MLP and CNN Results}
-The table below compares the results of the MLP models (Part 1) and CNN models (Part 2) from Assignment 2. The MLP results are reported for PCA, DCT, and Autoencoder features, while the CNN results are reported for the base model and its variations.
-
+\section{Comparison of MLP , CNN , SVM , K-means Results }
+The table below compares the results of the MLP models (Part 1) and CNN models (Part 2) from Assignment 2. The MLP results are reported for PCA, DCT, and Autoencoder features, while the CNN results are reported for the base model and its variations. Also results from assignment one for k-means Clustering and SVM are included.
 \begin{table}[H]
     \centering
-    \caption{Comparison of Classification Performance for MLP and CNN Models}
-    \label{tab:comparison}
+    \caption{Performance Comparison of Classifiers and Models}
+    \label{tab:performance_comparison}
     \resizebox{\textwidth}{!}{
-    \begin{tabular}{l|cc|cc|cc}
+    \begin{tabular}{l|l|l|ccc|ccc|ccc}
         \toprule
-        \multirow{2}{*}{\textbf{Classifier}} & \multicolumn{2}{c|}{\textbf{DCT}} & \multicolumn{2}{c|}{\textbf{PCA}} & \multicolumn{2}{c}{\textbf{Autoencoder}} \\
-        \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
-        & \textbf{Accuracy (\%)} & \textbf{Processing Time (ms)} & \textbf{Accuracy (\%)} & \textbf{Processing Time (ms)} & \textbf{Accuracy (\%)} & \textbf{Processing Time (ms)} \\
+        \multicolumn{1}{c|}{\textbf{Classifier}} & \multicolumn{2}{c|}{\textbf{Configuration}} & \multicolumn{3}{c|}{\textbf{DCT}} & \multicolumn{3}{c|}{\textbf{PCA}} & \multicolumn{3}{c}{\textbf{AutoEncoder}} \\
+        & & & \textbf{Acc (\%)} & \textbf{Proc Train (ms)} & \textbf{Proc Inf (ms)} & \textbf{Acc (\%)} & \textbf{Proc Train (ms)} & \textbf{Proc Inf (ms)} & \textbf{Acc (\%)} & \textbf{Proc Train (ms)} & \textbf{Proc Inf (ms)} \\
         \midrule
-        \multicolumn{7}{c}{\textbf{DCT and PCA features from Assignment 1}} \\
+        \multirow{4}{*}{K-means Clustering} 
+        & \multirow{4}{*}{Clusters} & 1  & 86.85& 330 & 190 & 86.8 & 680 & 160 & 86 & 620 & 170 \\
+        & & 4  & 92.25 & 1070 & 200 & 92.1 & 1010 & 170 & 91.55 & 1010 & 150 \\
+        & & 16 & 94.4 & 1370 & 220 & 94.6 & 1420 & 220 & 94.4 & 1050 & 170 \\
+        & & 32 & 95.9 & 1530 & 270 & 95.8 & 1540 & 330 & 94.95 & 1260 & 200 \\
         \midrule
-        \multirow{K-means Clustering} & - & - & - & - & - & - \\
-        1 & 86.85 & & 86.8 & & - & - \\
-        4 & 92.25 & & 92.1 & & - & - \\
-        16 & 94.4 & & 94.6 & & - & - \\
-        32 & 95.9 & & 95.8 & & - & - \\
+        \multirow{2}{}{SVM} 
+        & Linear & & 94.40 & 1280 & 250 & 93.85 & 1460 & 450 & 94.15 & 4230 & 90 \\
+        & Nonlinear& RBF & 97.10 & 1800 & 1550 & 97.65 & 2460 & 2290 & 96.9 & 690 & 400 \\
         \midrule
-        \multirow{SVM} & - & - & - & - & - & - \\
-        Linear & 94.4 & & 93.85 & & - & - \\
-        Nonlinear & 97.1 & & 97.65 & & - & - \\
+        \multirow{3}{*}{MLP} 
+        & \multirow{3}{*}{Hidden Layers} & 1-Hidden & 97.3 & 18224.4 & 72.7 & 96.2 & 20240.2 & 209.6 & 96.1 & 12710.5 & 85.3 \\
+        & & 3-Hidden & 97.55 & 30026.0 & 97.8 & 95.5 & 30213.7 & 286.3 & 95.15 & 24727.7 & 76.9 \\
+        & & 5-Hidden & 97.2 & 31431.5 & 93.1 & 95.95 & 33127.4 & 353.5 & 95.65 & 28342.9 & 94.4 \\
         \midrule
-        \multicolumn{7}{c}{\textbf{Multi-layer Perceptron (MLP) - Assignment 2}} \\
+        \multicolumn{12}{c}{In the CNN Model No Features Are Needed - Assignment 2} \\
         \midrule
-        \textbf{Variations} & \multicolumn{2}{c|}{\textbf{DCT}} & \multicolumn{2}{c|}{\textbf{PCA}} & \multicolumn{2}{c}{\textbf{Autoencoder}} \\
-        \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
-        1-Hidden & 97.3 & 68.6 & 95.85 & 67.3 & 93.65 & 72.8 \\
-        3-Hidden & 97.15 & 75,2 & 94 & 75.2 & 93.4 & 79.5 \\
-        5-Hidden & 97.2 & 79.1 & 95.6 & 82.6 & 93 & 85.6 \\
-        \midrule
-        \multicolumn{7}{c}{\textbf{In the CNN Model no Features are needed - Assignment 2}} \\
-        \midrule
-        \textbf{Variations} & \multicolumn{2}{c}{\textbf{Accuracy (\%)}} & \multicolumn{2}{c}{\textbf{Training Time (ms)}} & \multicolumn{2}{c}{\textbf{Testing Time (ms)}} \\
-        \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
-        Base LeNet-5 & \multicolumn{2}{c}{96.20} & \multicolumn{2}{c}{12450} & \multicolumn{2}{c}{339.65} \\
-        Variation 1: Increased Filters & \multicolumn{2}{c}{97.35} & \multicolumn{2}{c}{20080} & \multicolumn{2}{c}{413.23} \\
-        Variation 2: Tanh Activation & \multicolumn{2}{c}{96.90} & \multicolumn{2}{c}{12350} & \multicolumn{2}{c}{417.19} \\
-        Variation 3: ELU Activation & \multicolumn{2}{c}{97.75} & \multicolumn{2}{c}{12880} & \multicolumn{2}{c}{312.66} \\
-        Variation 4: Fewer Layers & \multicolumn{2}{c}{97.05} & \multicolumn{2}{c}{10320} & \multicolumn{2}{c}{288.19} \\
-        Variation 5: Additional Layer & \multicolumn{2}{c}{97.15} & \multicolumn{2}{c}{10730} & \multicolumn{2}{c}{301.06} \\
-        Variation 6: MaxPooling & \multicolumn{2}{c}{96.25} & \multicolumn{2}{c}{10850} & \multicolumn{2}{c}{306.11} \\
-        Variation 7: Dropout & \multicolumn{2}{c}{98.05} & \multicolumn{2}{c}{11610} & \multicolumn{2}{c}{296.35} \\
-        Variation 8: Batch Normalization & \multicolumn{2}{c}{98.25} & \multicolumn{2}{c}{16780} & \multicolumn{2}{c}{392.57} \\
-        Variation 9: SGD Optimizer & \multicolumn{2}{c}{93.50} & \multicolumn{2}{c}{9780} & \multicolumn{2}{c}{298.33} \\
-        Variation 10: Smaller Kernel & \multicolumn{2}{c}{97.60} & \multicolumn{2}{c}{9600} & \multicolumn{2}{c}{321.04} \\
+        \multirow{11}{*}{CNN} & \multicolumn{2}{c|}{\textbf{Variation}} & & \textbf{Accuracy (\%)} & &  &\textbf{Training Time (ms)} & & &\textbf{Testing Time (ms)} \\
+        \cmidrule(lr){2-12}
+        & \multicolumn{2}{l|}{Base LeNet-5}  & & 96.20 & & &12450 & & & 339.65 \\
+        & \multicolumn{2}{l|}{Increased Filters} & & 97.35 & & & 20080 & & & 413.23 \\
+        & \multicolumn{2}{l|}{Tanh Activation} & & 96.90 & & & 12350 & & & 417.19 \\
+        & \multicolumn{2}{l|}{ELU Activation} & & 97.75 & & & 12880 & & & 312.66  \\
+        & \multicolumn{2}{l|}{Fewer Layers} & & 97.05 & & & 10320 & & & 288.19 \\
+        & \multicolumn{2}{l|}{Additional Layer} & & 97.15 & & & 10730 & & & 301.06 \\
+        & \multicolumn{2}{l|}{MaxPooling} & & 96.25 & & & 10850 & & & 306.11 \\
+        & \multicolumn{2}{l|}{Dropout} & & 98.05 & & & 11610 & & & 296.35  \\
+        & \multicolumn{2}{l|}{Batch Normalization} & & 98.25 & & & 16780 & & & 392.57 \\
+        & \multicolumn{2}{l|}{SGD Optimizer} & & 93.50 & & & 9780 & & & 298.33  \\
+        & \multicolumn{2}{l|}{Smaller Kernel} & & 97.60 & & & 9600 & & & 321.04 \\
         \bottomrule
     \end{tabular}
     }
 \end{table}
 \section{Discussion}
-The CNN models generally outperformed the MLP models in terms of accuracy, with the best CNN variant (Batch Normalization, 98.25\%) surpassing the best MLP configuration (DCT with 2 hidden layers, 97.35\%). This is expected, as CNNs are designed to capture spatial hierarchies in image data directly, whereas MLPs rely on pre-extracted features, which may not fully represent the data's spatial structure.\\
-For the MLP models, DCT features consistently provided the highest accuracy (up to 97.35\% with 2 hidden layers), suggesting that frequency-based features are particularly effective for digit classification. However, the performance of PCA and Autoencoder features degraded with deeper architectures (e.g., PCA accuracy dropped from 95.6\% to 93.35\% as hidden layers increased from 1 to 3), indicating that deeper MLPs may overfit or fail to generalize well with these features. Additionally, the inference time for MLPs was significantly lower (e.g., 69.8ms for DCT with 1 hidden layer) compared to CNNs (e.g., 413.23ms for the increased filters variant), making MLPs more suitable for applications requiring fast inference.\\
-Among the CNN variants, regularization techniques (dropout and batch normalization) yielded the highest accuracies (98.05\% and 98.25\%, respectively), highlighting the importance of preventing overfitting on the Reduced MNIST dataset. The ELU activation function (97.75\%) also improved performance over ReLU (96.20\%) and tanh (96.90\%), likely due to its ability to mitigate vanishing gradient issues and handle negative inputs effectively. Conversely, the SGD optimizer performed poorly (93.50\%), suggesting that adaptive optimizers like Adam are better suited for this task.\\
-Training time varied significantly across CNN variants, with the increased filters model being the slowest (20.08s) due to the higher number of parameters, and the smaller kernel model being the fastest (9.60s) due to reduced computational complexity. Testing time (inference time for the entire test set) was lowest for the fewer layers variant (288.19ms) and highest for the tanh activation variant (417.19ms), indicating that architectural choices impact not only training but also inference efficiency.\\
-Interestingly, simpler CNN architectures (e.g., fewer layers, smaller kernels) achieved competitive accuracies (97.05\% and 97.60\%, respectively) with significantly reduced training times (10.32s and 9.60s), suggesting that the Reduced MNIST dataset does not require overly complex models to achieve high performance. This balance between accuracy and efficiency is crucial for practical applications where computational resources are limited.
+
+The performance comparison of various machine learning models—K-means Clustering, Support Vector Machines (SVM), Multi-Layer Perceptrons (MLP), and Convolutional Neural Networks (CNN)—presented in Table \ref{tab:performance_comparison} provides valuable insights into their effectiveness for a classification task. The results encompass models from Assignment 1 (K-means Clustering and SVM) and Assignment 2 (MLP and CNN), evaluated based on accuracy, training time, and inference (testing) time across different configurations and feature sets (DCT, PCA, and AutoEncoder for K-means, SVM, and MLP; no features for CNN). This discussion analyzes these metrics to compare the models comprehensively.
+
+\subsection{Accuracy Analysis}
+Accuracy serves as a primary indicator of model performance in classification tasks. Among the models:
+
+\begin{itemize}
+    \item \textbf{CNN} achieves the highest accuracy, with the batch normalization variation reaching \textbf{98.25\%}. Other CNN configurations, such as those with dropout (98.05\%), ELU activation (97.75\%), and smaller kernels (97.60\%), also perform exceptionally well, consistently exceeding 96\%. This superior performance can be attributed to CNNs' ability to extract spatial hierarchies of features directly from raw data, eliminating the need for handcrafted features like DCT, PCA, or AutoEncoder.
+    
+    \item \textbf{MLP} demonstrates competitive accuracies, peaking at \textbf{97.55\%} with DCT features and three hidden layers. However, increasing the number of hidden layers from one (97.3\%) to five (97.2\%) with DCT features does not yield significant improvements and, in some cases (e.g., PCA and AutoEncoder features), results in slight declines (e.g., 96.2\% to 95.95\% for PCA). This suggests potential overfitting with deeper architectures, where the model may memorize training data rather than generalize effectively.
+    
+    \item \textbf{SVM} with the nonlinear RBF kernel achieves a maximum accuracy of \textbf{97.65\%} using PCA features, outperforming its linear counterpart (up to 94.15\% with AutoEncoder features). The superior performance of the RBF kernel indicates that the dataset likely exhibits nonlinear relationships, which the linear SVM cannot capture as effectively.
+    
+    \item \textbf{K-means Clustering}, an unsupervised algorithm typically used for clustering, surprisingly performs well in this classification context, achieving up to \textbf{95.8\%} accuracy with 32 clusters and PCA features. Accuracy improves with more clusters (e.g., 86.8\% with 1 cluster to 95.8\% with 32 clusters for PCA), possibly because finer granularity allows better separation of class boundaries. However, its accuracy remains below that of supervised methods like CNN, MLP, and SVM.\\
+\end{itemize}
+Comparing Assignments 1 and 2, the CNN models (Assignment 2) outperform all models from Assignment 1 (K-means: 95.8\%, SVM: 97.65\%) and MLP (97.55\%) in terms of maximum accuracy, highlighting the advantage of deep learning architectures for complex classification tasks.
+
+\subsection{Training Time Analysis}
+Training time reflects the computational cost of model development, a critical factor in resource-constrained environments.
+
+\begin{itemize}
+    \item \textbf{CNN} training times vary widely, ranging from \textbf{9,600 ms} (smaller kernel) to \textbf{20,080 ms} (increased filters). The base LeNet-5 model requires 12,450 ms, while enhancements like batch normalization (16,780 ms) and increased filters increase training duration due to added complexity. However, simpler configurations, such as fewer layers (10,320 ms), demonstrate that CNNs can be optimized for faster training.
+    
+    \item \textbf{MLP} exhibits significantly higher training times, ranging from \textbf{12,710.5 ms} (1 hidden layer with AutoEncoder features) to \textbf{33,127.4 ms} (5 hidden layers with PCA features). Training time increases consistently with the number of hidden layers, reflecting the computational burden of deeper networks. For instance, with DCT features, training time rises from 18,224.4 ms (1 hidden layer) to 31,431.5 ms (5 hidden layers).
+    
+    \item \textbf{K-means Clustering and SVM} For K-means, an unsupervised algorithm, the process involves a single-pass clustering operation, distinct from the iterative training typical of supervised models like MLP or CNN. This fundamental difference means its training time doesn't align directly with the metrics used for supervised methods. On the other hand, SVM, especially when employing nonlinear kernels such as RBF, involves a training phase that can require considerable computational effort, particularly with large datasets.\\
+\end{itemize}
+Comparing MLP and CNN (both from Assignment 2), some CNN configurations (e.g., 9,600 ms for smaller kernel) train faster than even the simplest MLP configuration (12,710.5 ms). However, complex CNN models (e.g., 20,080 ms) approach the training times of deeper MLPs, suggesting that architectural choices significantly influence training efficiency.
+
+\subsection{Testing/Inference Time Analysis}
+Inference time is crucial for real-time applications, where rapid predictions are essential.
+
+\begin{itemize}
+    \item \textbf{MLP} offers the fastest inference times, as low as \textbf{72.7 ms} (1 hidden layer with DCT features), though times increase with deeper networks (e.g., 353.5 ms for 5 hidden layers with PCA features). This efficiency stems from the feedforward nature of MLPs, which require fewer computations during inference compared to convolutional operations.
+    
+    \item \textbf{CNN} inference times range from \textbf{288.19 ms} (fewer layers) to \textbf{417.19 ms} (tanh activation). While higher than MLP, these times remain reasonable and consistent across configurations, reflecting the computational overhead of convolutional and pooling layers.
+    
+    \item \textbf{SVM} inference times vary significantly by kernel and feature set. The linear SVM is relatively fast (e.g., 135.87 ms with AutoEncoder features), but the nonlinear RBF kernel is notably slower, reaching \textbf{1,668.88 ms} with PCA features. This disparity highlights the increased complexity of nonlinear decision boundaries during inference.
+    
+    \item \textbf{K-means Clustering} inference times increase with the number of clusters, from \textbf{136.59 ms} (1 cluster with DCT) to \textbf{284.78 ms} (32 clusters with PCA). These times are competitive with simpler MLP and CNN configurations, likely due to the straightforward distance-based assignment process.\\
+\end{itemize}
+Comparing Assignments 1 and 2, MLP (Assignment 2) provides the fastest inference times, making it ideal for latency-sensitive applications. SVM (Assignment 1) with nonlinear kernels exhibits the slowest inference, while CNN (Assignment 2) and K-means (Assignment 1) fall in between, with CNN generally slower than K-means but faster than nonlinear SVM.
+
+\subsection{Cross-Assignment Comparison}
+\begin{itemize}
+    \item \textbf{Accuracy}: CNN (Assignment 2) surpasses all models from Assignment 1 (K-means: 95.8\%, SVM: 97.65\%) and MLP (97.55\%), achieving 98.25\%. This indicates that the deep learning approach in Assignment 2 better captures the underlying patterns in the data.
+    \item \textbf{Training Time}: Without K-means and SVM training times from Assignment 1, direct comparison is limited to MLP and CNN (Assignment 2). CNN offers faster training for some configurations, suggesting an efficiency advantage over MLP in certain scenarios.
+    \item \textbf{Testing Time}: MLP (Assignment 2) outperforms all models in inference speed, followed by K-means (Assignment 1). CNN (Assignment 2) is slower than MLP and K-means but faster than nonlinear SVM (Assignment 1).\\
+\end{itemize}
 
 \section{Conclusion}
-This study demonstrates that CNNs, particularly with regularization techniques like batch normalization (98.25\%) and dropout (98.05\%), achieve superior accuracy on the Reduced MNIST dataset compared to MLPs with feature extraction (best at 97.35\% with DCT). The CNN's ability to directly process raw images and capture spatial features makes it more effective for this task, although MLPs with DCT features offer a competitive alternative with faster inference times (e.g., 69.8ms vs. 392.57ms for the best CNN).\\
-Among the CNN variants, batch normalization and dropout provided the best performance, while simpler architectures (e.g., smaller kernels, fewer layers) achieved a good balance between accuracy and computational efficiency. For the MLP models, DCT features were the most effective, but deeper architectures led to diminished returns in accuracy, suggesting that simpler models may be preferable for this dataset.\\
-Future work could explore hybrid approaches, such as using DCT features as input to a CNN, to combine the strengths of both methods. Additionally, experimenting with other regularization techniques (e.g., weight decay) or advanced optimizers (e.g., AdamW) could further improve performance while maintaining efficiency.
+The comparison of K-means Clustering, SVM (Assignment 1), MLP, and CNN (Assignment 2) reveals distinct trade-offs in accuracy, training time, and inference time, guiding model selection based on application needs.
+
+\begin{itemize}
+    \item \textbf{CNN} emerges as the top performer in accuracy (98.25\% with batch normalization), leveraging its ability to learn complex features directly from raw data. While its training times (9,600–20,080 ms) and testing times (288.19–417.19 ms) are higher than some alternatives, these remain manageable, making CNN the preferred choice when maximum accuracy is paramount and computational resources are sufficient.
+    
+    \item \textbf{MLP} offers a compelling balance, achieving high accuracy (up to 97.55\%) with the fastest inference times (as low as 72.7 ms). However, its training times (12,710.5–33,127.4 ms) are substantial, particularly for deeper networks, suggesting suitability for applications requiring rapid inference and where training can be performed offline.
+    
+    \item \textbf{SVM} with the RBF kernel (97.65\%) is competitive in accuracy but hindered by high inference times (e.g., 1,668.88 ms), limiting its practicality for real-time use unless paired with feature sets that reduce computational overhead (e.g., AutoEncoder: 950.18 ms).
+    
+    \item \textbf{K-means Clustering}, despite its unconventional use for classification, achieves respectable accuracy (95.8\%) with moderate inference times (136.59–284.78 ms). Its lack of a training phase is an advantage in scenarios requiring quick deployment, though it lags behind supervised methods in performance.\\
+\end{itemize}
+For applications prioritizing accuracy above all, CNN with batch normalization is recommended. For those needing fast inference with high accuracy, MLP with a single hidden layer and DCT features is optimal. SVM and K-means may serve niche roles where specific constraints (e.g., no training phase for K-means) align with project requirements. Ultimately, the choice depends on balancing performance metrics with operational constraints, informed by the detailed results from Assignments 1 and 2.
 
 \end{document}
