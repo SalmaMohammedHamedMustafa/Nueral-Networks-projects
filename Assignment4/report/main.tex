@@ -1,0 +1,149 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{a4paper, margin=0.8in}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{tabularx} % For adjustable table width
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{lipsum} % For placeholder text (remove in final version)
+\usepackage{caption}
+\usepackage{subcaption}
+
+
+\usepackage{arabxetex} % Specialized package for Arabic with XeLaTeX
+\usepackage{fontspec}
+\usepackage{array} % For potential future adjustments
+\usepackage{longtable}
+% Revert to default Computer Modern font
+% Arabic font explicitly set
+\newfontfamily\arabicfont[Script=Arabic]{Amiri} % Primary Arabic font
+\IfFontExistsTF{Amiri}{}{\newfontfamily\arabicfont[Script=Arabic]{Scheherazade}} % Fallback font
+\IfFontExistsTF{Scheherazade}{}{\newfontfamily\arabicfont[Script=Arabic]{Noto Sans Arabic}} % Additional fallback
+
+
+\begin{document}
+\begin{titlepage}
+\begin{center}
+\textsc{\LARGE Neural Networks}\\[1.5cm]
+\textsc{\Large Cairo University}\\[0.5cm]
+\textsc{\large Faculty of Engineering}\\[0.5cm]
+\textsc{\large EECE}\\[3cm]
+
+\rule{\linewidth}{0.5mm} \\[0.4cm]
+{\huge \bfseries Assignment 4: AE, GAN and Attention}\\[0.4cm]
+\rule{\linewidth}{0.5mm} \\[1cm]
+\end{center}
+
+
+\begin{center}
+\large{Submitted to:}\\
+\vspace{0.5cm}
+\Large{\textbf{DR. Mohsen Rashwan}} \\[1cm]
+\end{center}
+
+\begin{center}
+    
+\begin{table}[htbp]
+  \centering
+  \large % Increases the font size of the entire table
+  \setlength{\tabcolsep}{12pt} % Increases horizontal padding
+  \renewcommand{\arraystretch}{1.25} % Increases vertical spacing
+  \begin{tabular}{p{5.5cm}|c}
+    \hline
+    \textbf{Name} & \textbf{ID} \\
+    \hline
+    {\arabicfont \RL{ريم محمود محمد عزت}} & 9210430 \\
+    {\arabicfont \RL{سلمى محمد حامد مصطفى}} & 9210480 \\
+    {\arabicfont \RL{يوسف هشام عبدالفتاح محمد ابوزيد}} & 9211451 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+
+\end{center}
+
+\end{titlepage}
+\renewcommand{\contentsname}{Table of Contents}
+\tableofcontents
+\clearpage
+
+
+% --------- List of Figures ---------
+\listoffigures
+
+\clearpage
+
+\section{Problem 1: General Information Retrieval (including Q/A)}
+
+\subsection{Introduction}
+In this problem we explore information Retrieval and Question Answering Using Arabic Language. This problem introduces  keyword-based retrieval, semantic search using embeddings, and Retrieval-Augmented Generation (RAG).We have chosen an Arabic book  \arabicfont \RL{"الف ليلة وليلة"} to work with, As it is a book rivh with stories that can be unknown to LLM so I can get better performance with RAG system.
+
+\subsection{Methodology}
+
+% Describing the book preparation process
+\subsubsection{Book Preparation}
+
+
+
+\begin{enumerate}
+    \item \textbf{Book Selection}: We utilized the \texttt{The\_Arabic\_E-Book\_Corpus} dataset from the \texttt{datasets} library, hosted on Hugging Face. This corpus contains a collection of Arabic e-books in plain text format. We selected \textit{ألف ليلة وليلة} (One Thousand and One Nights), due to its cultural significance and rich narrative content, which provides a suitable context for our task.
+    
+    \item \textbf{Text Splitting}: The book’s text was split into short paragraphs. Using a Python function to read the text and segment it into sentences , It splits on \texttt{(?<=[.؟!])$\backslash$s+}. It is splitted into paragraphs of 2–4 sentences, with a maximum of 3 sentences per paragraph.
+    
+    \item \textbf{Embedding Generation}: To enable semantic search, we generated embeddings for each paragraph using the \texttt{distiluse-base-multilingual-cased-v2} model from 
+    the
+    
+    \texttt{sentence\_transformers} library. 
+
+    \end{enumerate}
+
+\subsubsection{Retrieval System}
+
+The retrieval system was designed to process Arabic queries and return relevant paragraphs from the preprocessed text of \textit{ألف ليلة وليلة} using two distinct methods: classical keyword-based search and semantic search. 
+
+\begin{enumerate}
+    \item \textbf{Data Loading}: The system begins by loading the preprocessed paragraphs from \texttt{splitted\_book.txt}, which contains the text of the book segmented into short paragraphs. The embeddings for these paragraphs, stored in \texttt{embeddings.npy}, and the FAISS index, stored in \texttt{faiss\_index.bin}, are also loaded. The \texttt{distiluse-base-multilingual-cased-v2} model from the 
+    
+    \texttt{sentence\_transformers} library is initialized to encode query embeddings for semantic search.
+    
+    \item \textbf{Classical Search (TF-IDF)}: For the classical search, we employed the TF-IDF (Term Frequency-Inverse Document Frequency) method using the \texttt{TfidfVectorizer} from the \texttt{scikit-learn} library. The vectorizer was fitted to the paragraphs to create a TF-IDF matrix representing the importance of words in each paragraph. For a given Arabic query, the query is transformed into a TF-IDF vector, and cosine similarity is computed between the query vector and the paragraph matrix. The top 5 paragraphs with the highest similarity scores are retrieved, along with their scores, for display.
+    
+    \item \textbf{Semantic Search (Embedding-Based)}: The semantic search leverages the precomputed embeddings and the FAISS index. When a query is received, it is encoded into a 512-dimensional embedding using the same \texttt{distiluse-base-multilingual-cased-v2} model used for the paragraphs. The FAISS \texttt{FlatL2} index performs a nearest neighbor search to identify the top 5 paragraphs whose embeddings are closest to the query embedding, based on L2 distance. The retrieved paragraphs and their corresponding distances are returned.
+    
+    \item \textbf{User Interface and Result Display}: An interactive command-line interface was implemented in Python to accept Arabic queries from the user. The interface prompts the user to enter a query or type 'quit' to exit. For each valid query, both classical and semantic searches are executed, and the top 5 results from each method are displayed side by side. Each result includes the paragraph text and its associated score (cosine similarity for TF-IDF, L2 distance for semantic search). The output is formatted with clear separators and labels in Arabic, ensuring readability and ease of comparison.
+\end{enumerate}
+
+
+\subsubsection{RAG System}
+
+The Retrieval-Augmented Generation (RAG) system extends the retrieval interface to answer Arabic questions by combining retrieved context with a large language model (LLM).
+
+
+\begin{enumerate}
+    \item \textbf{LLM Setup}: The system utilizes the \texttt{Meta-Llama-3.1-8B} model. To enhance Arabic language performance, an Arabic LoRA (Low-Rank Adaptation) adapter, \texttt{Arabic-llama3.1-lora-FT}, is overlaid on the base model. Both models are configured with a maximum sequence length of 2048 tokens and prepared for inference. The tokenizer from the LoRA model is used for encoding and decoding text.
+    
+    \item \textbf{Query Processing}: The interactive interface, was extended to handle question-answering. Users input Arabic questions, and the system checks for valid input, allowing termination with the command 'quit'. For each question, the system performs both classical (TF-IDF) and semantic (embedding-based) searches to retrieve relevant paragraphs, as described in the retrieval system methodology.
+    
+    \item \textbf{Context Retrieval}: For the RAG approach, the system selects the top result from both search methods to serve as context. The first paragraph from the classical search (TF-IDF) and the first paragraph from the semantic search (embedding-based) are extracted. These contexts are used to augment the LLM’s input for generating answers.
+    
+    \item \textbf{Answer Generation}: The \texttt{ask\_arabic} function processes the question with or without context. If context is provided, it is prepended to the question in the prompt format: ``السياق: [context]\textbackslash nالسؤال: [question]\textbackslash nالإجابة:''. Without context, only the question is included. The LLM generates a response with a maximum of 128 new tokens, using greedy decoding (temperature=0.0, no sampling). The response is extracted by splitting on ``الإجابة:`` and stripping whitespace. Three answers are generated for each question:
+    \begin{itemize}
+        \item \textbf{Baseline (LLM-only)}: The question is answered without any retrieved context.
+        \item \textbf{Classical RAG}: The question is answered with the first TF-IDF search result as context.
+        \item \textbf{Semantic RAG}: The question is answered with the first semantic search result as context.
+    \end{itemize}
+    
+    \item \textbf{Result Display}: The system displays the search results (top 5 paragraphs from both classical and semantic searches) followed by the three generated answers.
+\end{enumerate}
+
+
+
+
+\end{document}
