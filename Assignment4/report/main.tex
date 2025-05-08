@@ -125,28 +125,696 @@ The Retrieval-Augmented Generation (RAG) system extends the retrieval interface 
 
 
 \begin{enumerate}
-    \item \textbf{LLM Setup}: The system utilizes the \texttt{Meta-Llama-3.1-8B} model. To enhance Arabic language performance, an Arabic LoRA (Low-Rank Adaptation) adapter, \texttt{Arabic-llama3.1-lora-FT}, is overlaid on the base model. Both models are configured with a maximum sequence length of 2048 tokens and prepared for inference. The tokenizer from the LoRA model is used for encoding and decoding text.
+    \item \textbf{LLM Setup}: The system utilizes the \texttt{gpt-4o-mini} model API from open AI. Configured with temperature=0.0 for reproducibility and max tokens = 128.
     
     \item \textbf{Query Processing}: The interactive interface, was extended to handle question-answering. Users input Arabic questions, and the system checks for valid input, allowing termination with the command 'quit'. For each question, the system performs both classical (TF-IDF) and semantic (embedding-based) searches to retrieve relevant paragraphs, as described in the retrieval system methodology.
     
-    \item \textbf{Context Retrieval}: For the RAG approach, the system selects the top result from both search methods to serve as context. The first paragraph from the classical search (TF-IDF) and the first paragraph from the semantic search (embedding-based) are extracted. These contexts are used to augment the LLM’s input for generating answers.
+    \item \textbf{Context Retrieval}: For the RAG approach, the system selects the top 3 results from both search methods to serve as context. If The result paragraph is number i in the book paragraphs i-1, i and i+1 are passed to the model as context to ensure bette undersnatding for the content.
     
-    \item \textbf{Answer Generation}: The \texttt{ask\_arabic} function processes the question with or without context. If context is provided, it is prepended to the question in the prompt format: ``السياق: [context]\textbackslash nالسؤال: [question]\textbackslash nالإجابة:''. Without context, only the question is included. The LLM generates a response with a maximum of 128 new tokens, using greedy decoding (temperature=0.0, no sampling). The response is extracted by splitting on ``الإجابة:`` and stripping whitespace. Three answers are generated for each question:
+    \item \textbf{Answer Generation}: The \texttt{ask\_arabic} function processes the question with or without context. Answers are generated for each question:
     \begin{itemize}
         \item \textbf{Baseline (LLM-only)}: The question is answered without any retrieved context.
-        \item \textbf{Classical RAG}: The question is answered with the first TF-IDF search result as context.
-        \item \textbf{Semantic RAG}: The question is answered with the first semantic search result as context.
+        \item \textbf{Classical RAG}: The question is answered with the first 3 TF-IDF search results as context.
+        \item \textbf{Semantic RAG}: The question is answered with the first 3 semantic search results as context.
     \end{itemize}
     
-    \item \textbf{Result Display}: The system displays the search results (top 5 paragraphs from both classical and semantic searches) followed by the three generated answers.
+    \item \textbf{Result Display}: The system displays the generated answers.
 \end{enumerate}
+
+\subsection{Results}
+
+\subsubsection{Retrieval System Results}
+\textbf{Query 1:} \arabicfont \RL{من هم شهريار وشاهزمان}
+\begin{enumerate}
+    \item Classical Search Result: \arabicfont \RL{يُحكى أنه في قديم الزمان عاش ملكان عظيمان شقيقان يُدعيان شهريار وشاهزمان. كان شهريار هو الأكبر سنًّا، وامتد سلطانه إلى أقاصي الأرض. شعر شهريار برغبة في رؤية أخيه، فطلب من كبير وزرائه الذهاب لإحضاره إليه}
+
+    Score: 0.32989686491101883
+
+    Semantic Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+    
+    Distance: 1.081768274307251
+
+    \item Classical Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Score: 0.27742265750562584
+    
+    Semantic Search Result: \arabicfont \RL{يُحكى أنه في قديم الزمان عاش ملكان عظيمان شقيقان يُدعيان شهريار وشاهزمان. كان شهريار هو الأكبر سنًّا، وامتد سلطانه إلى أقاصي الأرض. شعر شهريار برغبة في رؤية أخيه، فطلب من كبير وزرائه الذهاب لإحضاره إليه.}
+    
+    Distance: 1.3581560850143433
+
+    \item Classical Search Result: \arabicfont \RL{مرت الأيام، وشاهزمان يزداد نحولًا، واعتقد شهريار أن أخاه مشتاق لوطنه، لكن تبين أن الأمر أسوأ من ذلك بكثير. فبعد عشرة أيام، انهار شاهزمان وأخبر أخاه بالسبب الرئيسي وراء أحزانه. لقد هجرته زوجته الملكة، وهو الآن كسير الفؤاد.}
+
+    Score: 0.17847705713373826
+
+    Semantic Search Result: \arabicfont \RL{قصة الصياد والجني}
+
+    Distance: 1.4182838201522827
+
+    \item Classical Search Result: \arabicfont \RL{في تلك الليلة، اصطحب الوزير شهرزاد إلى الملك العظيم شهريار، وزوجها له. لكن عندما ذهب الملك شهريار للنوم في تلك الليلة، بكت شهرزاد. وعندما سألها الملك عن سبب بكائها، أجابت: «لديّ أخت، وأود أن أودعها.»}
+
+    Score: 0.155031133039674
+
+    Semantic Search Result: \arabicfont \RL{في تلك الليلة، اصطحب الوزير شهرزاد إلى الملك العظيم شهريار، وزوجها له. لكن عندما ذهب الملك شهريار للنوم في تلك الليلة، بكت شهرزاد. وعندما سألها الملك عن سبب بكائها، أجابت: «لديّ أخت، وأود أن أودعها.»}
+
+    Distance: 1.437458872795105
+
+    \item Classical Search Result: \arabicfont \RL{ظل الملك شهريار يعمل طوال اليوم التالي، وعاد إلى المنزل في الليل إلى شهرزاد.}
+
+    Score: 0.14938705215508133
+
+    Semantic Search Result: \arabicfont \RL{ظل الملك شهريار يعمل طوال اليوم التالي، وعاد إلى المنزل في الليل إلى شهرزاد.}
+
+    Distance: 1.4516593217849731
+\end{enumerate}
+
+\textbf{Query 2:} \arabicfont \RL{من الأكبر سنًّا بين شهريار وشاهزمان}
+\begin{enumerate}
+    \item Classical Search Result: \arabicfont \RL{يُحكى أنه في قديم الزمان عاش ملكان عظيمان شقيقان يُدعيان شهريار وشاهزمان. كان شهريار هو الأكبر سنًّا، وامتد سلطانه إلى أقاصي الأرض. شعر شهريار برغبة في رؤية أخيه، فطلب من كبير وزرائه الذهاب لإحضاره إليه.}
+
+    Score: 0.4221575816720085
+
+    Semantic Search Result: \arabicfont \RL{يُحكى أنه في قديم الزمان عاش ملكان عظيمان شقيقان يُدعيان شهريار وشاهزمان. كان شهريار هو الأكبر سنًّا، وامتد سلطانه إلى أقاصي الأرض. شعر شهريار برغبة في رؤية أخيه، فطلب من كبير وزرائه الذهاب لإحضاره إليه.}
+
+    Distance: 1.0115330219268799
+
+    \item Classical Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Score: 0.21388455476367854
+
+    Semantic Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Distance: 1.0618455410003662
+
+    \item Classical Search Result: \arabicfont \RL{مرت الأيام، وشاهزمان يزداد نحولًا، واعتقد شهريار أن أخاه مشتاق لوطنه، لكن تبين أن الأمر أسوأ من ذلك بكثير. فبعد عشرة أيام، انهار شاهزمان وأخبر أخاه بالسبب الرئيسي وراء أحزانه. لقد هجرته زوجته الملكة، وهو الآن كسير الفؤاد.}
+
+    Score: 0.1376004622110114
+
+    Semantic Search Result: \arabicfont \RL{مرت الأيام، وشاهزمان يزداد نحولًا، واعتقد شهريار أن أخاه مشتاق لوطنه، لكن تبين أن الأمر أسوأ من ذلك بكثير. فبعد عشرة أيام، انهار شاهزمان وأخبر أخاه بالسبب الرئيسي وراء أحزانه. لقد هجرته زوجته الملكة، وهو الآن كسير الفؤاد.}
+
+    Distance: 1.409240961074829
+
+    \item Classical Search Result: \arabicfont \RL{في تلك الليلة، اصطحب الوزير شهرزاد إلى الملك العظيم شهريار، وزوجها له. لكن عندما ذهب الملك شهريار للنوم في تلك الليلة، بكت شهرزاد. وعندما سألها الملك عن سبب بكائها، أجابت: «لديّ أخت، وأود أن أودعها.»}
+
+    Score: 0.11952435739329209
+
+    Semantic Search Result: \arabicfont \RL{عندما حل الليل، قالت الشقيقات الثلاث للحمَّال: «سيدي، لقد حان الوقت لتنهض. فلترتدي خُفيك وترحل.» فرد الحمَّال: «إن خروج روحي من جسدي أهون عليّ من فراقكن. دعونا نواصل ما نحن عليه، ثم نفترق في الصباح.»}
+
+    Distance: 1.463319182395935
+
+    \item Classical Search Result: \arabicfont \RL{ظل الملك شهريار يعمل طوال اليوم التالي، وعاد إلى المنزل في الليل إلى شهرزاد.}
+
+    Score: 0.11517294018063412
+
+    Semantic Search Result: \arabicfont \RL{وعند سماع الوزير ما قالته ابنته، استشاط غضبًا وحرّم عليها الزواج من الملك. وأخذا يتجادلان معًا فترة طويلة، لكن شهرزاد لم تكن لتغير رأيها، فأرسلها الوزير لتصبح زوجة الملك، وهو يقول: «أدعو الله ألا يحرمني منك.»}
+
+    Distance: 1.4737191200256348
+\end{enumerate}
+
+\textbf{Query 3:} \arabicfont \RL{ما السبب الرئيسي وراء أحزان شاهزمان؟}
+\begin{enumerate}
+    \item Classical Search Result: \arabicfont \RL{مرت الأيام، وشاهزمان يزداد نحولًا، واعتقد شهريار أن أخاه مشتاق لوطنه، لكن تبين أن الأمر أسوأ من ذلك بكثير. فبعد عشرة أيام، انهار شاهزمان وأخبر أخاه بالسبب الرئيسي وراء أحزانه. لقد هجرته زوجته الملكة، وهو الآن كسير الفؤاد.}
+
+    Score: 0.26246435251832106
+
+    Semantic Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Distance: 1.2975513935089111
+
+    \item Classical Search Result: \arabicfont \RL{ومع حلول العام الجديد، بدأت الفتيات في البكاء، وأخذن يتعلقن بي قائلات: «لعلك لا تغادر أبدًا.» فسألتهن عن سبب بكائهن وظنهن أنني سأغادر. فأجبن: «ستكون أنت نفسك السبب.» وأخبرنني أنهن أربعون ابنة لأربعين ملكًا، ويجب عليهن ترك القصر مرة كل عام مدة أربعين يومًا. وعند مغادرتهن، لن أصاحبهن.}
+
+    Score: 0.0795256750164715
+
+    Semantic Search Result: \arabicfont \RL{فرد عليه التاجر التحية. سأله الرجل العجوز: «لماذا تجلس هنا، يا صاحبي، في هذا المكان الممتلئ بالجن والشياطين؟ فما من شيء في هذا البستان المسكون سوى الحزن والأسى.»}
+
+    Distance: 1.353788137435913
+
+    \item Classical Search Result: \arabicfont \RL{قال الجني: «شبيك لبيك، اطلب ما شئت، فأنا عبد من يرتدي هذا الخاتم في إصبعه، أنفذ له ما يشاء.»}
+
+    Score: 0.06101734520395203
+
+    Semantic Search Result: \arabicfont \RL{فرأيت حزن الملك يتحول إلى غضب؛ الأمر الذي أدهشني كثيرًا.}
+
+    Distance: 1.3606433868408203
+
+    \item Classical Search Result: \arabicfont \RL{عندما سمعتُ ما قالته، اندهشتُ، وشكرتها على إنقاذ حياتي. أخبرتها بكل ما حدث لنا منذ وفاة أبينا، من البداية إلى النهاية. وعندما سمعت قصتي، غضبت بشدة، وقالت: «سأطير الآن إلى شقيقيك، وأُغرق سفينتهما.»}
+
+    Score: 0.043767624266596035
+
+    Semantic Search Result: \arabicfont \RL{تقدم بعد ذلك الدرويش الأول وقال: يا سيدتي، إن سبب فقداني لعيني وحلاقة لحيتي على هذا النحو هو أن والدي كان ملكًا، وكان أخوه ملكًا هو الآخر ولديه ابن وابنة. وبمرور السنوات، اعتدت زيارة عمي من حين لآخر. ونمت بيني وبين ابن عمي صداقة قوية.}
+
+    Distance: 1.3979297876358032
+
+    \item Classical Search Result: \arabicfont \RL{قال علاء الدين عندما رأى ما حدث: «أيها الجني، أعد إلي زوجتي وقصري.»}
+
+    Score: 0.04183775827098927
+
+    Semantic Search Result: \arabicfont \RL{وعندما رآهم، أخذ يبكي بحرقة؛ فسألته زوجته: «ما بك يا زوجي؟ لماذا تشعر بالحزن وجميعنا سعداء ونحتفل بعودتك إلينا؟» فأجاب: «ولماذا لا أحزن وما تبقى لي من العمر سوى سنة واحدة فقط؟» ثم أخبرها بكل شيء حدث مع الجني. عندما سمعت أسرته ما قاله، أخذوا يبكون، وكان يومًا حزينًا حيث تجمع جميع الأطفال حول والدهم.}
+
+    Distance: 1.3984439373016357
+\end{enumerate}
+
+\textbf{Query 4:} \arabicfont \RL{لماذا غضب شهريار غضبًا شديدًا؟}
+\begin{enumerate}
+    \item Classical Search Result: \arabicfont \RL{وبعد سماع ما رواه أخوه، غضب شهريار غضبًا شديدًا حتى إنه فقد صوابه، وقرر أنه لا يمكن الثقة في أي امرأة قط، وخطط لأمر مريع. استدعى الملك وزيره، وطلب منه أن يبحث له عن زوجة. وكان يعتزم الزواج منها يومًا واحدًا ثم قتلها، على أن يستمر في ذلك حتى يقضي على جميع النساء في مملكته.}
+
+    Score: 0.3034526751754444
+
+    Semantic Search Result: \arabicfont \RL{فرأيت حزن الملك يتحول إلى غضب؛ الأمر الذي أدهشني كثيرًا.}
+
+    Distance: 1.0196154117584229
+
+    \item Classical Search Result: \arabicfont \RL{فرأيت حزن الملك يتحول إلى غضب؛ الأمر الذي أدهشني كثيرًا.}
+
+    Score: 0.25120586632808317
+
+    Semantic Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Distance: 1.2158721685409546
+
+    \item Classical Search Result: \arabicfont \RL{لكنني كنت غاضبًا غضبًا جعلني لا أستمع إليها. وركلت الباب بقدمي.}
+
+    Score: 0.2183099706829414
+
+    Semantic Search Result: \arabicfont \RL{فرد عليه التاجر التحية. سأله الرجل العجوز: «لماذا تجلس هنا، يا صاحبي، في هذا المكان الممتلئ بالجن والشياطين؟ فما من شيء في هذا البستان المسكون سوى الحزن والأسى.»}
+
+    Distance: 1.2283470630645752
+
+    \item Classical Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Score: 0.20473163951202672
+
+    Semantic Search Result: \arabicfont \RL{وبعد سماع ما رواه أخوه، غضب شهريار غضبًا شديدًا حتى إنه فقد صوابه، وقرر أنه لا يمكن الثقة في أي امرأة قط، وخطط لأمر مريع. استدعى الملك وزيره، وطلب منه أن يبحث له عن زوجة. وكان يعتزم الزواج منها يومًا واحدًا ثم قتلها، على أن يستمر في ذلك حتى يقضي على جميع النساء في مملكته.}
+
+    Distance: 1.2759933471679688
+
+    \item Classical Search Result: \arabicfont \RL{يُحكى أنه في قديم الزمان عاش ملكان عظيمان شقيقان يُدعيان شهريار وشاهزمان. كان شهريار هو الأكبر سنًّا، وامتد سلطانه إلى أقاصي الأرض. شعر شهريار برغبة في رؤية أخيه، فطلب من كبير وزرائه الذهاب لإحضاره إليه.}
+
+    Score: 0.1577834085076877
+
+    Semantic Search Result: \arabicfont \RL{وعندما رآهم، أخذ يبكي بحرقة؛ فسألته زوجته: «ما بك يا زوجي؟ لماذا تشعر بالحزن وجميعنا سعداء ونحتفل بعودتك إلينا؟» فأجاب: «ولماذا لا أحزن وما تبقى لي من العمر سوى سنة واحدة فقط؟» ثم أخبرها بكل شيء حدث مع الجني. عندما سمعت أسرته ما قاله، أخذوا يبكون، وكان يومًا حزينًا حيث تجمع جميع الأطفال حول والدهم.}
+
+    Distance: 1.279199242591858
+\end{enumerate}
+
+\textbf{Query 5:} \arabicfont \RL{لماذا قرر شهريار أنه لا يمكن الثقة في أي امرأة قط؟}
+\begin{enumerate}
+    \item Classical Search Result: \arabicfont \RL{وبعد سماع ما رواه أخوه، غضب شهريار غضبًا شديدًا حتى إنه فقد صوابه، وقرر أنه لا يمكن الثقة في أي امرأة قط، وخطط لأمر مريع. استدعى الملك وزيره، وطلب منه أن يبحث له عن زوجة. وكان يعتزم الزواج منها يومًا واحدًا ثم قتلها، على أن يستمر في ذلك حتى يقضي على جميع النساء في مملكته.}
+
+    Score: 0.37301669658764786
+
+    Semantic Search Result: \arabicfont \RL{وبعد سماع ما رواه أخوه، غضب شهريار غضبًا شديدًا حتى إنه فقد صوابه، وقرر أنه لا يمكن الثقة في أي امرأة قط، وخطط لأمر مريع. استدعى الملك وزيره، وطلب منه أن يبحث له عن زوجة. وكان يعتزم الزواج منها يومًا واحدًا ثم قتلها، على أن يستمر في ذلك حتى يقضي على جميع النساء في مملكته.}
+
+    Distance: 0.8278130888938904
+
+    \item Classical Search Result: \arabicfont \RL{يُحكى أنه في قديم الزمان عاش ملكان عظيمان شقيقان يُدعيان شهريار وشاهزمان. كان شهريار هو الأكبر سنًّا، وامتد سلطانه إلى أقاصي الأرض. شعر شهريار برغبة في رؤية أخيه، فطلب من كبير وزرائه الذهاب لإحضاره إليه.}
+
+    Score: 0.1869212300947148
+
+    Semantic Search Result: \arabicfont \RL{وعند سماع الوزير ما قالته ابنته، استشاط غضبًا وحرّم عليها الزواج من الملك. وأخذا يتجادلان معًا فترة طويلة، لكن شهرزاد لم تكن لتغير رأيها، فأرسلها الوزير لتصبح زوجة الملك، وهو يقول: «أدعو الله ألا يحرمني منك.»}
+
+    Distance: 1.245424747467041
+
+    \item Classical Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Score: 0.17916329703003445
+
+    Semantic Search Result: \arabicfont \RL{وبعد ذلك، لم يشكُ الحمَّال حاله في الدنيا ثانيةً أبدًا.}
+
+    Distance: 1.2796372175216675
+
+    \item Classical Search Result: \arabicfont \RL{واستدار الخليفة إلى الدراويش، وقال: «أنتم من أفراد المنزل، ربما يمكنكم تفسير هذه المشاهد الغريبة لنا.» فأجابوا: «نحن لا نعلم شيئًا، ولم نر هذا المكان قط قبل الليلة. هذا الرجل الموجود بجانبك يمكن أن يجيبك.»}
+
+    Score: 0.16010074395439988
+
+    Semantic Search Result: \arabicfont \RL{فُتحت الستارة، وظهرت من خلفها امرأة أخرى مبهرة وجهها يفوق الشمس إشراقًا. سارت نحوهم وقالت: «لماذا تقفان هكذا؟ لتخففا الحمل عن هذا الرجل المسكين.»}
+
+    Distance: 1.2847260236740112
+
+    \item Classical Search Result: \arabicfont \RL{فُتحت الستارة، وظهرت من خلفها امرأة أخرى مبهرة وجهها يفوق الشمس إشراقًا. سارت نحوهم وقالت: «لماذا تقفان هكذا؟ لتخففا الحمل عن هذا الرجل المسكين.»}
+
+    Score: 0.1277367628218387
+
+    Semantic Search Result: \arabicfont \RL{وفي أحد الأيام، والقمر لا يزال في السماء، والنهار لم يطلع بعد، خرج الصياد متجاوزًا أطراف المدينة وصولًا إلى شاطئ البحر، ثم خاض في الماء، وألقى بشبكته، وانتظر حتى غاصت. وجمع الحبل، وبدأ في سحب الشبكة، وشعر أنها تزداد ثقلًا حتى أصبح غير قادر على سحبها أكثر من ذلك. فخلع ملابسه وغطس في الماء، سابحًا تحت الشبكة، وأخذ يهزها ويجرها حتى جلبها أخيرًا إلى الشاطئ.}
+
+    Distance: 1.3000266551971436
+\end{enumerate}
+
+\textbf{Query 6:} \arabicfont \RL{ما الأمر المريع الذى خطط له شهريار؟}
+\begin{enumerate}
+    \item Classical Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Score: 0.3334224283628586
+
+    Semantic Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Distance: 1.2747981548309326
+
+    \item Classical Search Result: \arabicfont \RL{يُحكى أنه في قديم الزمان عاش ملكان عظيمان شقيقان يُدعيان شهريار وشاهزمان. كان شهريار هو الأكبر سنًّا، وامتد سلطانه إلى أقاصي الأرض. شعر شهريار برغبة في رؤية أخيه، فطلب من كبير وزرائه الذهاب لإحضاره إليه.}
+
+    Score: 0.2569633464831983
+
+    Semantic Search Result: \arabicfont \RL{فأجاب الجني: «تمن أمنية!» سعِد الصياد ثانيةً، وقال: «ماذا أتمنى؟» فأجاب الجني: «أخبرني كيف تود أن تموت.»}
+
+    Distance: 1.3963439464569092
+
+    \item Classical Search Result: \arabicfont \RL{في تلك الليلة، اصطحب الوزير شهرزاد إلى الملك العظيم شهريار، وزوجها له. لكن عندما ذهب الملك شهريار للنوم في تلك الليلة، بكت شهرزاد. وعندما سألها الملك عن سبب بكائها، أجابت: «لديّ أخت، وأود أن أودعها.»}
+
+    Score: 0.2416717647372499
+
+    Semantic Search Result: \arabicfont \RL{ظل الملك شهريار يعمل طوال اليوم التالي، وعاد إلى المنزل في الليل إلى شهرزاد.}
+
+    Distance: 1.411792278289795
+
+    \item Classical Search Result: \arabicfont \RL{ظل الملك شهريار يعمل طوال اليوم التالي، وعاد إلى المنزل في الليل إلى شهرزاد.}
+
+    Score: 0.17954190960234082
+
+    Semantic Search Result: \arabicfont \RL{في تلك الليلة، اصطحب الوزير شهرزاد إلى الملك العظيم شهريار، وزوجها له. لكن عندما ذهب الملك شهريار للنوم في تلك الليلة، بكت شهرزاد. وعندما سألها الملك عن سبب بكائها، أجابت: «لديّ أخت، وأود أن أودعها.»}
+
+    Distance: 1.495529294013977
+
+    \item Classical Search Result: \arabicfont \RL{قال الجني: «شبيك لبيك، اطلب ما شئت، فأنا عبد من يرتدي هذا الخاتم في إصبعه، أنفذ له ما يشاء.»}
+
+    Score: 0.1738954365530399
+
+    Semantic Search Result: \arabicfont \RL{وأخبرته أن الساحر حاول أن يكسب حبها بتقديم الجواهر والذهب لها. استمع علاء الدين إلى كل ما قالته، وفكر بإمعان حتى توصل إلى خطة. وقبَّل زوجته، وأخبرها بما سيفعله.}
+
+    Distance: 1.5034421682357788
+\end{enumerate}
+
+\textbf{Query 7:} \arabicfont \RL{لماذا قالت شهرزاد أود أن تزوجني الملك شهريار؟}
+\begin{enumerate}
+    \item Classical Search Result: \arabicfont \RL{طالعت الابنة الكبرى كتبًا كثيرة واتسمت باتساع ثقافتها. وعندما سمعت بمخطط الملك البغيض، قالت لوالدها: «أود أن تزوجني الملك شهريار، حتى أتمكن من إنقاذ شعبنا أو الموت مثل باقي الفتيات.»}
+
+    Score: 0.3376613456545272
+
+    Semantic Search Result: \arabicfont \RL{وعند سماع الوزير ما قالته ابنته، استشاط غضبًا وحرّم عليها الزواج من الملك. وأخذا يتجادلان معًا فترة طويلة، لكن شهرزاد لم تكن لتغير رأيها، فأرسلها الوزير لتصبح زوجة الملك، وهو يقول: «أدعو الله ألا يحرمني منك.»}
+
+    Distance: 0.9920270442962646
+
+    \item Classical Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Score: 0.28310697532991513
+
+    Semantic Search Result: \arabicfont \RL{في تلك الليلة، اصطحب الوزير شهرزاد إلى الملك العظيم شهريار، وزوجها له. لكن عندما ذهب الملك شهريار للنوم في تلك الليلة، بكت شهرزاد. وعندما سألها الملك عن سبب بكائها، أجابت: «لديّ أخت، وأود أن أودعها.»}
+
+    Distance: 0.9946215152740479
+
+    \item Classical Search Result: \arabicfont \RL{في تلك الليلة، اصطحب الوزير شهرزاد إلى الملك العظيم شهريار، وزوجها له. لكن عندما ذهب الملك شهريار للنوم في تلك الليلة، بكت شهرزاد. وعندما سألها الملك عن سبب بكائها، أجابت: «لديّ أخت، وأود أن أودعها.»}
+
+    Score: 0.23680276185701477
+
+    Semantic Search Result: \arabicfont \RL{بلغني — أيها الملك — أن علاء الدين وقع في حب ابنة الملك.}
+
+    Distance: 0.9974219799041748
+
+    \item Classical Search Result: \arabicfont \RL{ظل الملك شهريار يعمل طوال اليوم التالي، وعاد إلى المنزل في الليل إلى شهرزاد.}
+
+    Score: 0.19575134996534033
+
+    Semantic Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Distance: 1.0369329452514648
+
+    \item Classical Search Result: \arabicfont \RL{في الليلة التالية، قالت دينارزاد لأختها: «رجاءً يا أختاه، إذا لم يكن النوم يغالبك، فاروي لنا واحدة من قصصك الممتعة.» وأضاف الملك: «لتكن نهاية قصة التاجر، فأنا أود سماعها.» فأجابت شهرزاد: «كما تشاءان.»}
+
+    Score: 0.1908122663316863
+
+    Semantic Search Result: \arabicfont \RL{عبس الصياد عند سماعه ذلك، وقال: «لماذا ترغب في قتلي وأنا أعدتك إلى هذا العالم؟»}
+
+    Distance: 1.0437206029891968
+\end{enumerate}
+
+\textbf{Query 8:} \arabicfont \RL{من دينارزاد؟}
+\begin{enumerate}
+    \item Classical Search Result: \arabicfont \RL{فأجابت دينارزاد: «عظيم.»}
+
+    Score: 0.38851371050402356
+
+    Semantic Search Result: \arabicfont \RL{قصة علاء الدين}
+
+    Distance: 1.3227245807647705
+
+    \item Classical Search Result: \arabicfont \RL{وقالت دينارزاد لأختها: «أختاه، يا لها من قصة غريبة ومذهلة!» فردت شهرزاد: «هذا لا يقارَن بما سأرويه لكما غدًا.»}
+
+    Score: 0.2270181177871458
+
+    Semantic Search Result: \arabicfont \RL{فأجابت دينارزاد: «عظيم.»}
+
+    Distance: 1.3507766723632812
+
+    \item Classical Search Result: \arabicfont \RL{وقالت دينارزاد لأختها: «يا لها من قصة غريبة وجميلة يا أختاه!» فردت شهرزاد: «هذا لا يقارَن بما سأرويه لكما غدًا.»}
+
+    Score: 0.21716601962350177
+
+    Semantic Search Result: \arabicfont \RL{من يقايض مصباحًا قديمًا بواحد من هذه المصابيح الجديدة؟»}
+
+    Distance: 1.3800948858261108
+
+    \item Classical Search Result: \arabicfont \RL{في الليلة التالية، وبينما كانت شهرزاد في سريرها، قالت أختها دينارزاد: «رجاءً يا أختاه، اروي لنا المزيد من قصصك الممتعة.» وأضاف الملك: «لتكن ما تبقى من قصة الحمَّال.» فأجابت شهرزاد: «على الرحب والسعة!»}
+
+    Score: 0.21239747581780455
+
+    Semantic Search Result: \arabicfont \RL{مصابيح! من يقايض مصباحًا قديمًا بواحد من هذه المصابيح الجديدة؟»}
+
+    Distance: 1.4255802631378174
+
+    \item Classical Search Result: \arabicfont \RL{في الليلة التالية، وبينما كانت شهرزاد في سريرها، قالت أختها دينارزاد: «رجاءً يا أختاه، اروي لنا المزيد من قصصك الممتعة.» وأضاف الملك: «لتكن أكثر إثارة من القصة السابقة.» فأجابت شهرزاد: «كما تشاءان!»}
+
+    Score: 0.20743573756800032
+
+    Semantic Search Result: \arabicfont \RL{بلغني — أيها الملك السعيد — أن الدرويش الثاني قال: عندما رأتني الفتاة، سألتني: «هل أنت إنس أم جن؟» فأجبتها: «إنس.» وسألت: «ما الذي أتى بك إلى هنا؟ لقد عشت في هذا المكان طيلة خمسة وعشرين عامًا دون أن أرى أحدًا على الإطلاق.»}
+
+    Distance: 1.5217704772949219
+\end{enumerate}
+
+\textbf{Query 9:} \arabicfont \RL{لماذا قرر شهريار ان يقتلها في اليوم التالي}
+\begin{enumerate}
+    \item Classical Search Result: \arabicfont \RL{ظل الملك شهريار يعمل طوال اليوم التالي، وعاد إلى المنزل في الليل إلى شهرزاد.}
+
+    Score: 0.40093955995304476
+
+    Semantic Search Result: \arabicfont \RL{وبعد سماع ما رواه أخوه، غضب شهريار غضبًا شديدًا حتى إنه فقد صوابه، وقرر أنه لا يمكن الثقة في أي امرأة قط، وخطط لأمر مريع. استدعى الملك وزيره، وطلب منه أن يبحث له عن زوجة. وكان يعتزم الزواج منها يومًا واحدًا ثم قتلها، على أن يستمر في ذلك حتى يقضي على جميع النساء في مملكته.}
+
+    Distance: 1.060058355331421
+
+    \item Classical Search Result: \arabicfont \RL{بلغني — أيها الملك السعيد — أن الحمَّال عاد إلى المنزل في اليوم التالي.}
+
+    Score: 0.30019655150807434
+
+    Semantic Search Result: \arabicfont \RL{عبس الصياد عند سماعه ذلك، وقال: «لماذا ترغب في قتلي وأنا أعدتك إلى هذا العالم؟»}
+
+    Distance: 1.1691937446594238
+
+    \item Classical Search Result: \arabicfont \RL{قصة الملك شهريار وشهرزاد}
+
+    Score: 0.29607745257341556
+
+    Semantic Search Result: \arabicfont \RL{لكن الآن يجب أن أقتل شقيقيك.»}
+
+    Distance: 1.1793206930160522
+
+    \item Classical Search Result: \arabicfont \RL{يُحكى أنه في قديم الزمان عاش ملكان عظيمان شقيقان يُدعيان شهريار وشاهزمان. كان شهريار هو الأكبر سنًّا، وامتد سلطانه إلى أقاصي الأرض. شعر شهريار برغبة في رؤية أخيه، فطلب من كبير وزرائه الذهاب لإحضاره إليه.}
+
+    Score: 0.2511222351580609
+
+    Semantic Search Result: \arabicfont \RL{ظل الملك شهريار يعمل طوال اليوم التالي، وعاد إلى المنزل في الليل إلى شهرزاد.}
+
+    Distance: 1.1847589015960693
+
+    \item Classical Search Result: \arabicfont \RL{ودعاه التاجر البحار للعودة في اليوم التالي وتناول العشاء معه مرة أخرى.}
+
+    Score: 0.24524147953659478
+
+    Semantic Search Result: \arabicfont \RL{ودعاه التاجر البحار للعودة في اليوم التالي وتناول العشاء معه مرة أخرى.}
+
+    Distance: 1.2514185905456543
+\end{enumerate}
+
+\textbf{Query 10:} \arabicfont \RL{ماذا طلبت السيدة اللتي ترتدي ملابس بالية من الرجل العجوز}
+\begin{enumerate}
+    \item Classical Search Result: \arabicfont \RL{وعند وصولنا إلى شاطئ البحر، قابلت سيدة ترتدي ملابس بالية قبلت يداي، وقالت: «سيدي، لتسد إليّ خدمة، وأعتقد أنني سأتمكن من مكافأتك عليها.» أجبتها: «سأسدي لك الخدمة دون مكافأة.» فقالت: «سيدي، لتتزوجني وتأخذني معك على متن هذه السفينة.»}
+
+    Score: 0.1953447496176008
+
+    Semantic Search Result: \arabicfont \RL{فقابل امرأة عجوز، ودفع لها مالًا مقابل أن تقايض ملابسها بملابسه. وذهب علاء الدين مرتديًا هذه الملابس إلى أحد المتاجر في المدينة، وابتاع سمًّا قوي المفعول، ثم عاد إلى القصر. وصل الساحر وهو يتمنى أن يقنع الأميرة بحبه لها.}
+
+    Distance: 1.2328011989593506
+
+    \item Classical Search Result: \arabicfont \RL{وظلت هناك مدة أسبوع حتى نظر الملك في أمرها، وطلب من وزيره إحضارها إليه. أخبرت السيدة العجوز الملك بشأن حب ابنها لابنته، ورغبته في الزواج منها. ضحك الملك بصوت مرتفع مما سمعه، وسأل السيدة عما جلبته له.}
+
+    Score: 0.19382395122296742
+
+    Semantic Search Result: \arabicfont \RL{فرد عليه التاجر التحية. سأله الرجل العجوز: «لماذا تجلس هنا، يا صاحبي، في هذا المكان الممتلئ بالجن والشياطين؟ فما من شيء في هذا البستان المسكون سوى الحزن والأسى.»}
+
+    Distance: 1.2874681949615479
+
+    \item Classical Search Result: \arabicfont \RL{رد الجني: «والله، إنها لقصة غريبة ومدهشة، كما وعدت. لقد فزت، وسأعتق الرجل.» ثم أطلق الجني سراح الرجل، ورحل. شكر التاجر الرجل العجوز الذي هنأه بدوره على استرداد حريته.}
+
+    Score: 0.15547409034430923
+
+    Semantic Search Result: \arabicfont \RL{من يقايض مصباحًا قديمًا بواحد من هذه المصابيح الجديدة؟»}
+
+    Distance: 1.2879889011383057
+
+    \item Classical Search Result: \arabicfont \RL{وفي أحد الأيام، عثرنا على بعض العنب، الأمر الذي أسعد الرجل العجوز للغاية. أخبرته أن بإمكاني تحويل العنب إلى شراب له، وابتهج لهذه الفكرة. عندما أصبح الخليط جاهزًا، شربه الرجل العجوز وكأنه ماء.}
+
+    Score: 0.15226016364450282
+
+    Semantic Search Result: \arabicfont \RL{سمعت إحدى خادمات القصر نداء الساحر، وتذكرت أنها رأت مصباحًا قديمًا كان علاء الدين يحتفظ به على أحد الأرفف في غرفة نومه. فذهبت لإحضاره، وقايضته مع الغريب، وهي تفكر في مدى حكمتها ومدى سذاجة الرجل العجوز. وابتهج الساحر عندما رأى المصباح بين يديه، وفر من المدينة حتى وصل إلى الصحراء المحيطة بها بعد أن تأكد أنه ما من أحد يتبعه.}
+
+    Distance: 1.2996954917907715
+
+    \item Classical Search Result: \arabicfont \RL{أخبره التاجر بكل ما حدث مع الجني، فاندهش الرجل العجوز من القصة، وقال: «إن وعدك بالرجوع إلى هنا من أفعال الشجعان.»}
+
+    Score: 0.13579565563734247
+
+    Semantic Search Result: \arabicfont \RL{وظلت هناك مدة أسبوع حتى نظر الملك في أمرها، وطلب من وزيره إحضارها إليه. أخبرت السيدة العجوز الملك بشأن حب ابنها لابنته، ورغبته في الزواج منها. ضحك الملك بصوت مرتفع مما سمعه، وسأل السيدة عما جلبته له.}
+
+    Distance: 1.3210644721984863
+\end{enumerate}
+\subsubsection{Analysis Of Retrieval System Results }
+
+The retrieval system results for the Arabic queries based on \textit{One Thousand and One Nights} demonstrate a clear distinction between \textbf{classical (TF-IDF)} and \textbf{semantic (embedding-based)} search methods:
+
+\begin{itemize}
+    \item \textbf{Classical Search (TF-IDF)}: This method consistently retrieves relevant paragraphs with higher precision for queries directly referencing key terms (e.g., Query 2: \arabicfont \RL{من الأكبر سنًّا بين شهريار وشاهزمان} yields a top result with a score of 0.422, accurately identifying Shahryar as the elder). However, it struggles with queries requiring deeper contextual understanding (e.g., Query 6: \arabicfont \RL{ما الأمر المريع الذى خطط له شهريار} returns less relevant results like the general story of Shahryar and Shahrazad, score 0.333). This highlights TF-IDF's reliance on keyword matching, which can miss nuanced meanings.
+
+    \item \textbf{Semantic Search (Embedding-Based)}: Semantic search performs better for queries needing contextual inference (e.g., Query 5: \arabicfont \RL{لماذا قرر شهريار أنه لا يمكن الثقة في أي امرأة قط} retrieves the exact paragraph with a low L2 distance of 0.828). However, it occasionally retrieves irrelevant results for simpler queries (e.g., Query 3: \arabicfont \RL{ما السبب الرئيسي وراء أحزان شاهزمان} returns a generic story, distance 1.298). This suggests embeddings capture broader semantic relationships but may overgeneralize for precise queries.
+
+    \item \textbf{Comparison}: Classical search excels in keyword-driven queries, while semantic search is superior for abstract or context-heavy queries. The side-by-side display of results enhances user comparison, but the varying relevance (e.g., Query 8: \arabicfont \RL{من دينارزاد} has classical search correctly identifying her as Shahrazad’s sister, score 0.389, while semantic search retrieves an unrelated story, distance 1.323) indicates room for hybrid approaches to balance precision and context.
+\end{itemize}
+
+
+
+\subsubsection{RAG System Results}
+
+\textbf{Query 1:} \arabicfont \RL{من هم شهريار وشاهزمان؟}
+\begin{itemize}
+    \item Answer Without Context: \arabicfont \RL{شهريار وشاهزمان هما شخصيتان رئيسيتان في مجموعة من القصص المعروفة باسم "ألف ليلة وليلة". شهريار هو ملك يكتشف خيانة زوجته، مما يدفعه إلى اتخاذ قرار بالزواج من امرأة جديدة كل ليلة ثم إعدامها في الصباح التالي. هذا السلوك يستمر حتى يتزوج من شهرزاد. شاهزمان هو شقيق شهريار، ويظهر في بعض القصص كملك آخر. يشارك في الأحداث التي تتعلق بشهريار ويعكس بعض التوترات العائلية بينهما.}
+
+    \item Classical Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{شهريار وشاهزمان هما ملكان عظيمان شقيقان. شهريار هو الأكبر سنًا ويمتد سلطانه إلى أقاصي الأرض، بينما شاهزمان هو الأخ الأصغر الذي يعاني من الحزن بسبب هجر زوجته الملكة له.}, score = 0.3299
+        \item \arabicfont \RL{شهريار وشاهزمان هما ملكان عظيمان شقيقان. شهريار هو الأكبر سنًا، ويمتد سلطانه إلى أقاصي الأرض، بينما شاهزمان هو الأخ الأصغر.}, score = 0.2774
+        \item \arabicfont \RL{شهريار وشاهزمان هما ملكان عظيمان شقيقان. شهريار هو الأكبر سنًا ويمتد سلطانه إلى أقاصي الأرض، بينما شاهزمان هو الأخ الأصغر الذي يعاني من حزن عميق بسبب هجر زوجته الملكة.}, score = 0.1785
+    \end{enumerate}
+
+    \item Semantic Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{شهريار وشاهزمان هما ملكان عظيمان شقيقان. شهريار هو الأكبر سنًا، ويمتد سلطانه إلى أقاصي الأرض، بينما شاهزمان هو الأخ الأصغر.}, distance = 1.1678
+        \item \arabicfont \RL{شهريار هو الملك الذي يروي له شهرزاد القصص في كل ليلة، بينما شاهزمان هو أخو شهريار. في القصة، يعاني كلاهما من خيانة زوجتيهما، مما يؤدي إلى تصرفات شهريار القاسية تجاه النساء.}, distance = 1.4751
+        \item \arabicfont \RL{شهريار وشاهزمان هما شخصيتان من حكايات "ألف ليلة وليلة". شهريار هو الملك الذي قرر الزواج من النساء ثم قتلهن بعد ليلة واحدة، بينما شاهزمان هو شقيقه الذي يشاركه في هذه القصة. تتناول الحكايات الصراعات والمغامرات التي يواجهها الأخوان، وتظهر كيف تؤثر قصص النساء على مصيرهم.}, distance = 1.4866
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Query 2:} \arabicfont \RL{من الأكبر سنًّا بين شهريار وشاهزمان؟}
+\begin{itemize}
+    \item Answer Without Context: \arabicfont \RL{شهريار هو الأكبر سنًا بين شهريار وشاهزمان.}
+
+    \item Classical Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{الأكبر سنًّا بين شهريار وشاهزمان هو شهريار.}, score = 0.4222
+        \item \arabicfont \RL{الأكبر سنًّا بين شهريار وشاهزمان هو .}, score = 0.2139
+        \item \arabicfont \RL{الأكبر سنًّا بين شهريار وشاهزمان هو شهريار.}, score = 0.1376
+    \end{enumerate}
+
+    \item Semantic Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{الأكبر سنًّا بين شهريار وشاهزمان هو شهريار.}, distance = 1.1032
+        \item \arabicfont \RL{الأكبر سنًّا بين شهريار وشاهزمان هو شهريار.}, distance = 1.1401
+        \item \arabicfont \RL{شهريار هو الأكبر سنًا بين شهريار وشاهزمان.}, distance = 1.1832
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Query 3:} \arabicfont \RL{ما السبب الرئيسي وراء أحزان شاهزمان؟}
+\begin{itemize}
+    \item Answer Without Context: \arabicfont \RL{السبب الرئيسي وراء أحزان شاهزمان هو فقدانه لزوجته، حيث يعاني من الألم والحزن العميق بسبب فقدان الحب الذي كان يجمعهما. هذا الفقدان يؤثر على حياته بشكل كبير، مما يجعله يعيش في حالة من الكآبة والحنين.}
+
+    \item Classical Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{السبب الرئيسي وراء أحزان شاهزمان هو أنه هجرته زوجته الملكة، مما جعله يشعر بالكسرة والحزن الشديد.}, score = 0.2625
+        \item \arabicfont \RL{السبب الرئيسي وراء أحزان شاهزمان هو أن الفتيات الأربعين، اللواتي هن بنات لأربعين ملكًا، سيضطررن لمغادرة القصر لمدة أربعين يومًا، وعندما يغادرن، لن يتمكن من اصطحابه معهن. هذا الفراق يسبب لهن الحزن، حيث يشعرن بأنهن سيفقدن رفقته ودعمه، ويعتقدن أن مغادرتهن ستؤدي إلى عدم رؤيته مرة أخرى.}, score = 0.0795
+        \item \arabicfont \RL{السبب الرئيسي وراء أحزان شاهزمان هو فقدانه لابنه علاء الدين، حيث كان يشعر بالقلق والقلق بسبب عدم معرفته بمكانه أو حالته، مما جعله يعيش في حالة من الحزن والاضطراب.}, score = 0.0610
+    \end{enumerate}
+
+    \item Semantic Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{السبب الرئيسي وراء أحزان شاهزمان هو شعوره بالوحدة والفراغ العاطفي، حيث كان يعيش بعيدًا عن أخيه شهريار، وكان يفتقده بشدة. كما أن الأحداث التي مر بها شهريار، والتي تتعلق بخيانة زوجته، أثرت أيضًا على مشاعر شاهزمان وجعلته يشعر بالحزن والقلق.}, distance = 1.2976
+        \item \arabicfont \RL{السبب الرئيسي وراء أحزان شاهزمان هو فقدانه لأبنائه وبناته وزوجته، حيث كانوا يبكون ويعبرون عن حزنهم بسبب مغادرته. كما أن مشيئته للعودة إلى البستان لملاقاة الجني تحمل في طياتها مشاعر القلق والخوف من المجهول، مما يزيد من حزنه.}, distance = 1.3538
+        \item \arabicfont \RL{السبب الرئيسي وراء أحزان شاهزمان هو فقدان ابنه، حيث أنه مفقود ولا يعلم ما حدث له، مما يسبب له حزنًا شديدًا.}, distance = 1.3606
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Query 4:} \arabicfont \RL{لماذا غضب شهريار غضبًا شديدًا؟}
+\begin{itemize}
+    \item Answer Without Context: \arabicfont \RL{غضب شهريار غضبًا شديدًا بسبب خيانة زوجته له، حيث اكتشف أنها كانت تخونه مع رجل آخر. هذا الأمر أثر عليه بشكل عميق وجعله يفقد الثقة في النساء بشكل عام، مما دفعه إلى اتخاذ قرار بالزواج من امرأة جديدة كل ليلة ثم إعدامها في الصباح التالي، كنوع من الانتقام من النساء.}
+
+    \item Classical Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{غضب شهريار غضبًا شديدًا لأنه اكتشف أن أخاه شاهزمان قد هجرته زوجته الملكة، مما جعله يشعر بعدم الثقة في النساء بشكل عام. هذا الأمر أثار مشاعر الغضب والخيبة لديه، وقرر أنه لا يمكن الوثوق بأي امرأة، مما دفعه إلى التخطيط لقتل جميع النساء في مملكته.}, score = 0.3035
+        \item \arabicfont \RL{غضب شهريار غضبًا شديدًا بسبب الحزن الذي شعر به عندما سمع عن معاناة عمه وفقدان ابنه. هذا الحزن تحول إلى غضب، مما يدل على عمق مشاعره وتأثره بالموقف. قد يكون أيضًا مرتبطًا بشعوره بالعجز عن مساعدته أو بسبب تذكيره بخيانته الشخصية ومعاناته الخاصة.}, score = 0.2512
+        \item \arabicfont \RL{غضب شهريار غضبًا شديدًا بسبب مشاعر الإحباط والاستياء التي كانت تتراكم في داخله، مما دفعه إلى التفكير في استخدام القوة لتدمير الجني والنقش المحفور. يبدو أن هناك موقفًا أو حدثًا معينًا أثار هذا الغضب، لكنه لم يكن قادرًا على الاستماع إلى تحذيرات شهرزاد أو نصائحها بسبب شدة انفعاله.}, score = 0.2183
+    \end{enumerate}
+
+    \item Semantic Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{غضب شهريار غضبًا شديدًا بسبب الحزن الذي شعر به عندما سمع عن معاناة عمه وفقدان ابنه. هذا الحزن تحول إلى غضب، مما يدل على عمق مشاعره وتأثره بالموقف. قد يكون أيضًا مرتبطًا بشعوره بالعجز عن مساعدته أو بسبب تذكيره بخيانته الشخصية، مما زاد من مشاعر الغضب والقلق لديه.}, distance = 1.0196
+        \item \arabicfont \RL{غضب شهريار غضبًا شديدًا لأنه اكتشف خيانة زوجته له، مما أدى إلى فقدان ثقته في النساء بشكل عام. هذا الغضب دفعه إلى اتخاذ قرار قاسي بالزواج من امرأة جديدة كل ليلة ثم إعدامها في الصباح التالي، ليضمن عدم تعرضه للخيانة مرة أخرى.}, distance = 1.2159
+        \item \arabicfont \RL{غضب شهريار غضبًا شديدًا لأنه اكتشف خيانة زوجته له، مما أدى إلى فقدان ثقته في النساء بشكل عام. هذا الغضب دفعه إلى اتخاذ قرار بقتل كل امرأة يتزوجها بعد ذلك، حيث قرر أن يتزوج كل ليلة امرأة جديدة ثم يقتلها في الصباح التالي، ليضمن عدم تعرضه للخيانة مرة أخرى.}, distance = 1.2283
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Query 5:} \arabicfont \RL{لماذا قرر شهريار أنه لا يمكن الثقة في أي امرأة قط؟}
+\begin{itemize}
+    \item Answer Without Context: \arabicfont \RL{قرر شهريار أنه لا يمكن الثقة في أي امرأة بسبب خيانته من قبل زوجته، التي كانت تخونه مع رجل آخر. هذه الخيانة أثرت عليه بشكل عميق، مما دفعه إلى اتخاذ قرار قاسي بأن يتزوج كل ليلة امرأة جديدة ويقوم بقتلها في الصباح التالي، حتى لا يتيح لنفسه الفرصة للثقة في أي امرأة مرة أخرى. هذا القرار يعكس شعوره بالخذلان والمرارة تجاه النساء بشكل عام.}
+
+    \item Classical Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{قرر شهريار أنه لا يمكن الثقة في أي امرأة قط بسبب خيانة زوجته الملكة له، مما أدى إلى شعوره بالخذلان والألم. بعد أن علم بأن أخاه شاهزمان قد هجرته زوجته، زاد ذلك من غضبه وشكوكه تجاه النساء بشكل عام، مما دفعه إلى اتخاذ قرار مروع بالانتقام من جميع النساء في مملكته.}, score = 0.3730
+        \item \arabicfont \RL{قرر شهريار أنه لا يمكن الثقة في أي امرأة قط بسبب خيانة زوجة أخيه شاهزمان له، مما جعله يشعر بخيبة أمل عميقة تجاه النساء. هذه الخيانة أثرت عليه بشكل كبير، وجعلته يعتقد أن جميع النساء غير مخلصات، مما دفعه إلى اتخاذ قرار قاسي بعدم الثقة في أي امرأة.}, score = 0.1869
+        \item \arabicfont \RL{قرر شهريار أنه لا يمكن الثقة في أي امرأة قط بعد أن اكتشف خيانة زوجته له. فقد كانت لديه تجربة مؤلمة عندما اكتشف أن زوجته كانت تخونه مع رجل آخر، مما أدى إلى شعوره بالخيانة والخذلان. نتيجة لذلك، قرر أن يتخذ قرارًا قاسيًا بعدم الثقة في النساء، وبدأ في الزواج من امرأة جديدة كل ليلة ثم يقتلها في الصباح التالي، ليضمن عدم تعرضه للخيانة مرة أخرى.}, score = 0.1792
+    \end{enumerate}
+
+    \item Semantic Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{قرر شهريار أنه لا يمكن الثقة في أي امرأة قط بسبب خيانة زوجة أخيه شاهزمان له، حيث هجرته وتركته كسير الفؤاد. هذا الأمر أثار غضبه الشديد وجعله يشعر بالخيبة من النساء بشكل عام، مما دفعه إلى اتخاذ قرار مروع بالانتقام من جميع النساء في مملكته.}, distance = 0.8278
+        \item \arabicfont \RL{قرر شهريار أنه لا يمكن الثقة في أي امرأة قط بسبب خيانته من قبل زوجته السابقة، التي خانته مع رجل آخر. هذه الخيانة أثرت عليه بشكل عميق وجعلته يشعر بالخذلان، مما دفعه إلى اتخاذ قرار قاسي بأن يتزوج كل ليلة امرأة جديدة ويقوم بقتلها في الصباح التالي، حتى لا يتعرض للخيانة مرة أخرى.}, distance = 1.2454
+        \item \arabicfont \RL{قرر شهريار أنه لا يمكن الثقة في أي امرأة قط بسبب خيانتها له، حيث اكتشف أن زوجته كانت تخونه مع رجل آخر. هذه الخيانة أثرت عليه بشكل عميق وجعلته يشعر بالخذلان، مما دفعه إلى اتخاذ قرار قاسي بعدم الثقة في النساء بشكل عام، وبدأ في الزواج من نساء ثم قتلهن بعد ليلة واحدة، اعتقادًا منه أن هذا هو السبيل لحماية نفسه من الألم والخيانة.}, distance = 1.2796
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Query 6:} \arabicfont \RL{ما الأمر المريع الذى خطط له شهريار؟}
+\begin{itemize}
+    \item Answer Without Context: \arabicfont \RL{الأمر المريع الذي خطط له شهريار هو أن يتزوج كل ليلة امرأة جديدة ثم يقتلها في الصباح التالي، وذلك بعد أن اكتشف خيانتها له. هذا التصرف كان نتيجة لخيبة أمله في النساء، وقد استمر في هذا الفعل حتى قابل شهرزاد، التي استخدمت ذكاءها وحيلتها لإنقاذ نفسها وإيقاف هذا السلوك.}
+
+    \item Classical Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{الأمر المريع الذي خطط له شهريار هو أنه بعد أن اكتشف خيانة زوجته، قرر أن يتزوج كل ليلة من امرأة جديدة ثم يقتلها في الصباح التالي، وذلك كنوع من الانتقام من النساء. هذا القرار أدى إلى انتشار الخوف والرعب في مملكته.}, score = 0.3334
+        \item \arabicfont \RL{الأمر المريع الذي خطط له شهريار هو الانتقام من النساء بسبب خيانة زوجته له. بعد أن اكتشف خيانة زوجته، قرر أن يتزوج كل ليلة من امرأة جديدة ثم يقتلها في الصباح التالي، ليضمن ألا تتكرر خيانة النساء له. هذا القرار أدى إلى سلسلة من الأحداث المأساوية التي أثرت على المملكة بأكملها.}, score = 0.2570
+        \item \arabicfont \RL{الأمر المريع الذي خطط له شهريار هو أنه كان ينوي قتل شهرزاد بعد انتهاء ليلة زفافهما، كما كان يفعل مع كل زوجة له، حيث كان يعتقد أن ذلك هو السبيل للتخلص من خيانة النساء. ولكن شهرزاد كانت تخطط لإنقاذ نفسها من هذا المصير من خلال سرد القصص المثيرة التي تجعل الملك يرغب في الاستماع إليها وعدم قتلها.}, score = 0.2417
+    \end{enumerate}
+
+    \item Semantic Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{الأمر المريع الذي خطط له شهريار هو أنه بعد أن اكتشف خيانة زوجته له، قرر أن يتزوج كل ليلة من امرأة جديدة ثم يقتلها في الصباح التالي، وذلك كنوع من الانتقام من النساء. هذا القرار أدى إلى انتشار الخوف والرعب في مملكته.}, distance = 1.2748
+        \item \arabicfont \RL{الأمر المريع الذي خطط له شهريار هو أن يقوم بقتل كل امرأة يتزوجها بعد ليلة واحدة، وذلك بسبب خيانتها له. فقد قرر أن ينتقم من النساء بشكل عام بعد أن اكتشف خيانة زوجته، فبدأ في الزواج من نساء ثم يقتلهن في الصباح التالي.}, distance = 1.3963
+        \item \arabicfont \RL{الأمر المريع الذي خطط له شهريار هو أنه كان يعتقد أن لديه فقط سنة واحدة متبقية من عمره، وذلك بسبب ما حدث له مع الجني. هذا الأمر جعله يشعر بالحزن الشديد، وأثر على عائلته أيضًا، حيث تجمعوا حوله وهم يبكون بسبب هذا الخبر المؤلم.}, distance = 1.4118
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Query 7:} \arabicfont \RL{لماذا قالت شهرزاد أود أن تزوجني الملك شهريار؟}
+\begin{itemize}
+    \item Answer Without Context: \arabicfont \RL{شهرزاد لم تقل مباشرة أنها ترغب في الزواج من الملك شهريار، بل كانت تخطط لاستخدام ذكائها وحيلتها لإنقاذ نفسها من مصير الموت. كانت تعرف أن الملك شهريار يقتل زوجاته بعد ليلة واحدة، لذا قررت أن تروي له قصصًا مشوقة كل ليلة، مما يجعله يرغب في الإبقاء عليها حية لسماع المزيد من القصص. من خلال هذه الحيلة، تمكنت من كسب وقته وثقته، وفي النهاية، تغيرت مشاعر الملك نحوها.}
+
+    \item Classical Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{قالت شهرزاد "أود أن تزوجني الملك شهريار" لأنها أرادت أن تنقذ شعبها من مصير مروع، حيث كان الملك يخطط لقتل جميع النساء في مملكته. كانت تأمل أن تتمكن من إيقاف هذا المخطط البغيض، أو على الأقل أن تموت مثل باقي الفتيات إذا لم تتمكن من ذلك.}, score = 0.3377
+        \item \arabicfont \RL{قالت شهرزاد إنها ترغب في الزواج من الملك شهريار لأنها كانت تعرف أنه ملك قوي وعظيم، ولديها خطة لإنقاذ نفسها والنساء من مصيرهن المحتوم. كانت تدرك أن الملك كان يتزوج كل ليلة بامرأة جديدة ثم يقتلها في الصباح، لذا أرادت أن تكون هي من يروي له القصص ويشغله عن هذا السلوك، مما يمنحها الفرصة للبقاء على قيد الحياة.}, score = 0.2831
+        \item \arabicfont \RL{شهرزاد لم تقل "أود أن تزوجني الملك شهريار"، بل كانت تبكي بسبب رغبتها في وداع أختها. كان بكاؤها يعبر عن مشاعر الحزن والفراق، وليس عن رغبتها في الزواج. هي استخدمت هذه الحيلة لتأجيل مصيرها، حيث أرادت أن تروي قصة لأختها قبل أن تواجه مصيرها المحتوم.}, score = 0.2368
+    \end{enumerate}
+
+    \item Semantic Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{قالت شهرزاد "أود أن تزوجني الملك شهريار" لأنها كانت ترغب في إنقاذ شعبها من مصيرهم المأساوي، حيث كان الملك يقتل الفتيات بعد الزواج منهن. كانت تأمل أن تتمكن من تغيير هذا الوضع أو أن تموت مثل باقي الفتيات، مما يعكس شجاعتها وإرادتها القوية في مواجهة الظلم.}, distance = 0.9920
+        \item \arabicfont \RL{شهرزاد لم تقل "أود أن تزوجني الملك شهريار"، بل كانت تبكي بسبب رغبتها في وداع أختها. كان بكاؤها يعبر عن مشاعر الحزن والفراق، وليس عن رغبتها في الزواج. هي استخدمت هذه الحيلة لتأجيل مصيرها، حيث كانت تخطط لسرد القصص للملك شهريار في الليالي القادمة، مما يمنحها فرصة للبقاء على قيد الحياة.}, distance = 0.9946
+        \item \arabicfont \RL{قالت شهرزاد أود أن تزوجني الملك شهريار لأنها كانت تأمل في أن تتمكن من إنقاذ نفسها من مصير النساء اللواتي سبقنها، حيث كان الملك شهريار يتزوج كل ليلة امرأة جديدة ثم يقتلها في الصباح. كانت شهرزاد ذكية وملمة بالقصص، واعتقدت أن بإمكانها استخدام حكاياتها لإبقاء الملك مهتمًا بها، مما يمنحها فرصة للبقاء على قيد الحياة.}, distance = 0.9974
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Query 8:} \arabicfont \RL{من دينارزاد؟}
+\begin{itemize}
+    \item Answer Without Context: \arabicfont \RL{دينارزاد هي شخصية خيالية من حكايات "ألف ليلة وليلة". هي الأخت الصغرى لشهريار، الملك الذي يروي القصص. تُعرف دينارزاد بأنها الذكية والمبدعة، حيث كانت تروي القصص لشقيقها الملك كل ليلة، مما ساعد على إنقاذ حياتها وحياة النساء الأخريات من مصيرهن المحتوم. قصصها كانت مليئة بالحكمة والمغامرات، مما جعلها شخصية محورية في السرد القصصي.}
+
+    \item Classical Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{دينارزاد هي أخت شهرزاد، الشخصية الرئيسية في القصة.}, score = 0.3885
+        \item \arabicfont \RL{دينارزاد هي الأخت الصغرى لشهرزاد، وهي الشخصية التي تروي القصص في "ألف ليلة وليلة". تقوم دينارزاد بدور المحفز لقصص شهرزاد، حيث تطلب منها أن تروي لها قصة كل ليلة، مما يساعد على تأجيل مصير شهرزاد.}, score = 0.2270
+        \item \arabicfont \RL{دينارزاد هي إحدى الشقيقتين في القصة، وهي شخصية محورية تُعرف بكونها تحب سرد القصص. في هذا السياق، تظهر كأخت لشهرزاد، التي تُعتبر الراوية الرئيسية في الحكايات. دينارزاد تلعب دورًا مهمًا في تحفيز شهرزاد على سرد القصص من خلال تعبيرها عن إعجابها بالقصص التي تُروى.}, score = 0.2172
+    \end{enumerate}
+
+    \item Semantic Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{دينارزاد هي شخصية رئيسية في قصة "علاء الدين" وهي الأخت الصغرى لشهريار. تُعرف بأنها الذكية والحكيمة، وتلعب دورًا مهمًا في سرد القصص، حيث تساعد في تخفيف حزن الملك شهريار من خلال حكاياتها المثيرة.}, distance = 1.3227
+        \item \arabicfont \RL{دينارزاد هي أخت شهرزاد، الشخصية الرئيسية في القصة.}, distance = 1.3508
+        \item \arabicfont \RL{دينارزاد هي شخصية خيالية من حكايات "ألف ليلة وليلة"، وهي الأخت الصغرى لشهريار. تُعرف بأنها الراوية التي تروي القصص لشهريار في كل ليلة، مما يمنع الملك من قتلها ويجعله يستمع إلى حكاياتها الشيقة.}, distance = 1.3801
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Query 9:} \arabicfont \RL{لماذا قرر شهريار ان يقتلها في اليوم التالي؟}
+\begin{itemize}
+    \item Answer Without Context: \arabicfont \RL{قرر شهريار أن يقتل شهرزاد في اليوم التالي لأنه كان قد فقد الثقة في النساء بعد خيانتها له، واعتقد أن قتلها هو الحل للتخلص من الألم الذي يشعر به. كان يعتقد أن كل النساء غير مخلصات، ولذلك قرر أن ينهي حياتها كنوع من الانتقام. لكن شهرزاد استخدمت ذكائها وحيلتها لتأجيل مصيرها من خلال سرد القصص المثيرة التي جعلته يتشوق لسماع المزيد، مما أنقذ حياتها في النهاية.}
+
+    \item Classical Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{قرر شهريار أن يقتل شهرزاد في اليوم التالي لأنه كان يشعر بالحزن واليأس بعد أن علم أن عمره المتبقي هو سنة واحدة فقط، وكان يعتقد أن مصيره المحتوم هو الموت. في ظل هذا الشعور، قد يكون قد رأى في شهرزاد رمزًا للتهديد أو الخطر، مما دفعه إلى اتخاذ قرار القتل كوسيلة للتخلص من هذا الخوف.}, score = 0.4009
+        \item \arabicfont \RL{قرر شهريار أن يقتلها في اليوم التالي بسبب خيانتها له، حيث اكتشف أنها كانت تخونه مع رجل آخر. هذا الأمر أثار غضبه ورغبته في الانتقام، مما دفعه إلى اتخاذ قرار بقتلها.}, score = 0.3002
+        \item \arabicfont \RL{قرر شهريار أن يقتل شهرزاد في اليوم التالي لأنه كان قد فقد الثقة في النساء بعد أن خانته زوجته الأولى. وقد قرر أن يتزوج كل ليلة امرأة جديدة ثم يقتلها في الصباح التالي حتى لا تتاح لها الفرصة لخيانته كما حدث في الماضي. ولكن شهرزاد، بذكائها وحيلتها، استطاعت أن تؤجل مصيرها من خلال سرد القصص المثيرة التي تأسر انتباهه.}, score = 0.2961
+    \end{enumerate}
+
+    \item Semantic Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{قرر شهريار أن يقتل زوجته في اليوم التالي لأنه فقد الثقة في النساء بعد أن هجرته زوجته الملكة، واعتقد أن جميع النساء غير مخلصات. كان يخطط للزواج من امرأة واحدة فقط ليوم واحد ثم قتلها، كنوع من الانتقام من النساء بشكل عام، وذلك بسبب الألم الذي شعر به نتيجة خيانة زوجته.}, distance = 1.0419
+        \item \arabicfont \RL{قرر شهريار أن يقتلها في اليوم التالي بسبب خيانتها له، حيث اكتشف أنها كانت تخونه مع رجل آخر. هذا الأمر أثار غضبه ورغبته في الانتقام، مما دفعه إلى اتخاذ قرار بقتلها.}, distance = 1.0770
+        \item \arabicfont \RL{قرر شهريار أن يقتلها في اليوم التالي لأنه كان يشعر بالخيانة والقلق من نواياها. بعد أن استمع إلى قصتها، أدرك أنها كانت تخطط لقتل شقيقيه، مما جعله يشعر بأن حياتها كانت تهديدًا له ولعائلته. هذا الشعور بالخوف من الخيانة والانتقام دفعه إلى اتخاذ قرار بقتلها قبل أن تتمكن من تنفيذ خطتها.}, distance = 1.1221
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Query 10:} \arabicfont \RL{ماذا طلبت السيدة اللتي ترتدي ملابس بالية من الرجل العجوز؟}
+\begin{itemize}
+    \item Answer Without Context: \arabicfont \RL{طلبت السيدة التي ترتدي ملابس بالية من الرجل العجوز أن يساعدها أو يمنحها شيئًا من المال أو الطعام، حيث كانت في حالة من الحاجة والفقر.}
+
+    \item Classical Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{طلبت السيدة التي ترتدي ملابس بالية من الرجل العجوز أن يتزوجها ويأخذها معه على متن السفينة.}, score = 0.1953
+        \item \arabicfont \RL{طلبت السيدة التي ترتدي ملابس بالية من الرجل العجوز أن يساعدها في الحصول على بعض الطعام أو المال، حيث كانت تعاني من الفقر والحاجة.}, score = 0.1938
+        \item \arabicfont \RL{طلبت السيدة التي ترتدي ملابس بالية من الرجل العجوز أن يساعدها أو يمنحها شيئًا من المال أو الطعام، حيث كانت في حالة من الحاجة والفقر.}, score = 0.1555
+    \end{enumerate}
+
+    \item Semantic Search Answers: \arabicfont \RL{}
+
+    \begin{enumerate}
+        \item \arabicfont \RL{السيدة التي ترتدي ملابس بالية لم تطلب شيئًا من الرجل العجوز، بل كانت قد طلبت من علاء الدين أن يعطيها شيئًا من المال، ولكنها لم تتلقَ أي رد.}, distance = 1.1504
+        \item \arabicfont \RL{طلبت السيدة التي ترتدي ملابس بالية من الرجل العجوز أن يساعدها، حيث كانت في حاجة ماسة إلى المساعدة بسبب ظروفها الصعبة.}, distance = 1.1641
+        \item \arabicfont \RL{طلبت السيدة التي ترتدي ملابس بالية من الرجل العجوز أن يساعدها في الحصول على بعض الطعام أو المساعدة، حيث كانت في حالة من الحاجة والفقر.}, distance = 1.2006
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection{Analysis Of Retrieval-Augmented Generation (RAG) Results}
+The Retrieval-Augmented Generation (RAG) system results showcase the impact of combining retrieved context with the \texttt{gpt-4o-mini} LLM for answering Arabic questions:
+
+\begin{itemize}
+    \item \textbf{Baseline (LLM-only)}: Without context, the LLM provides general but sometimes inaccurate answers (e.g., Query 8: \arabicfont \RL{من دينارزاد} incorrectly identifies her as Shahryar’s sister and the storyteller). This reflects the LLM’s limited knowledge of specific details in \textit{One Thousand and One Nights}, underscoring the need for context.
+
+    \item \textbf{Classical RAG}: Answers using TF-IDF-retrieved context are more accurate for queries with explicit keywords (e.g., Query 1: \arabicfont \RL{من هم شهريار وشاهزمان} correctly identifies them as brother kings, score 0.3299). However, it misinterprets nuanced queries (e.g., Query 3: \arabicfont \RL{ما السبب الرئيسي وراء أحزان شاهزمان} wrongly attributes his sadness to unrelated events, score 0.0795), reflecting TF-IDF’s keyword bias.
+
+    \item \textbf{Semantic RAG}: Semantic context improves answers for complex queries (e.g., Query 5: \arabicfont \RL{لماذا قرر شهريار أنه لا يمكن الثقة في أي امرأة قط} accurately links his decision to his wife’s betrayal, distance 0.8278). Yet, it falters in simpler cases (e.g., Query 8: \arabicfont \RL{من دينارزاد} misidentifies her as a character in \textit{Aladdin}, distance 1.3227), indicating overgeneralization by embeddings.
+
+    \item \textbf{Overall}: RAG significantly enhances answer quality over the baseline, with classical RAG excelling in straightforward queries and semantic RAG better handling nuanced ones. Errors in both methods (e.g., Query 9’s misattributions) suggest that improving retrieval relevance and context selection (e.g., including adjacent paragraphs) could further boost performance. The system’s ability to display multiple answer types aids evaluation but highlights the need for refined retrieval to minimize inaccuracies.
+\end{itemize}
 
 
 \section{Problem 2: Benchmarking Arabic ASR}
-
-
 \subsection{Checklist Table}
-
 
 \begin{table}[H]
 \centering
