@@ -15,7 +15,8 @@
 \usepackage{lipsum} % For placeholder text (remove in final version)
 \usepackage{caption}
 \usepackage{subcaption}
-
+\usepackage{booktabs} % For better table formatting
+\usepackage{array} % For column width control
 
 \usepackage{arabxetex} % Specialized package for Arabic with XeLaTeX
 \usepackage{fontspec}
@@ -37,7 +38,7 @@
 \textsc{\large EECE}\\[3cm]
 
 \rule{\linewidth}{0.5mm} \\[0.4cm]
-{\huge \bfseries Assignment 4: AE, GAN and Attention}\\[0.4cm]
+{\huge \bfseries Assignment 4: General Information Retrieval (including Q/A) And Benchmarking among LLMs}\\[0.4cm]
 \rule{\linewidth}{0.5mm} \\[1cm]
 \end{center}
 
@@ -86,9 +87,6 @@
 In this problem we explore information Retrieval and Question Answering Using Arabic Language. This problem introduces  keyword-based retrieval, semantic search using embeddings, and Retrieval-Augmented Generation (RAG).We have chosen an Arabic book  \arabicfont \RL{"الف ليلة وليلة"} to work with, As it is a book rivh with stories that can be unknown to LLM so I can get better performance with RAG system.
 
 \subsection{Methodology}
-
-% Describing the book preparation process
-\subsubsection{Book Preparation}
 
 
 
@@ -144,6 +142,178 @@ The Retrieval-Augmented Generation (RAG) system extends the retrieval interface 
 \end{enumerate}
 
 
+\section{Problem 2: Benchmarking Arabic ASR}
+
+
+\subsection{Checklist Table}
+
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|p{3cm}|p{6cm}|c|p{4cm}|}
+\hline
+\textbf{\#} & \textbf{Category} & \textbf{Checklist Item} & \textbf{Status (Yes/No)} & \textbf{Notes} \\ \hline
+
+1 & Scope Definition & Have you clearly defined the NLT task(s) to be evaluated? & Yes & I have evaluated Automatic Speech Recognition (ASR) \\ \hline
+
+2 & Scope Definition & Have you specified the evaluation goals (accuracy, robustness, etc.)? & Yes &Character Error Rate (CER) is the most suitable metric for Arabic ASR \\ \hline
+
+3 & Language and Domain Selection & Have you selected relevant languages and dialects? & Yes & I am Using Modern Standard Arabic (MSA), Classical Arabic, and Egyptian dialect, each contributing approximately 0.33 to the dataset \\ \hline
+
+
+4 & Language and Domain Selection & Have you included multiple genres and domains? & Yes &  \\ \hline
+
+
+5 & Data Collection & Is the dataset licensed for research/benchmark use? & Yes & All used datasets are open source \\ \hline
+
+
+6 & Data Collection & Have you included real-world or synthetic data? & Yes & All used datasets are from broadcast audios or TV which are real-world data\\ \hline
+
+
+7 & Annotation Quality & Is there a clear annotation schema for the task? & Yes & \\ \hline
+
+
+8 & Annotation Quality & Is inter-annotator agreement calculated and acceptable? & Yes & \\ \hline
+
+
+9 & Data Balance & Does the dataset reflect demographic and topical diversity? & Yes & Modern Standard Arabic (MSA), Classical Arabic, and Egyptian dialect, each contributing approximately 0.33 to the dataset \\ \hline
+10 & Preprocessing & Is the data cleaned and normalized consistently? & Yes & \\ \hline
+11 & Preprocessing & Is the preprocessing procedure documented? & Yes & \\ \hline
+12 & Evaluation Metrics & Are appropriate metrics defined for each NLT task? & Yes & CER is suitable for Arabic ASR \\ \hline
+13 & Evaluation Metrics & Do you include baseline results or evaluation scripts? & Yes & \\ \hline
+14 & Documentation & Is the data creation process fully documented? & Yes & \\ \hline
+15 & Documentation & Are known limitations or biases discussed? & Yes & \\ \hline
+\end{tabular}%
+}
+\caption{Checklist for NLT Task Evaluation}
+\label{tab:checklist}
+\end{table}
+
+\subsection{Methodology}
+
+\subsubsection{Evaluation}
+We have Choose \textbf{Character Error Rate (CER)} to be our Evaluation metric, that is because it is a Suitable Metric for Arabic ASR as it is less strict than \textbf{word Error Rate (WER)} and gives more reasonable meaning of the quality of the transcript.
+
+\subsubsection{Dataset Preparation}
+
+% Describing the dataset creation process
+The dataset for benchmarking Arabic Automatic Speech Recognition (ASR) was curated to include three linguistic variants: Modern Standard Arabic (MSA), Classical Arabic, and Egyptian dialect, each contributing approximately 33\% to the dataset. The dataset comprises audio clips with corresponding text transcriptions, sourced from publicly available datasets on the Hugging Face platform. The preparation process ensured a balanced representation of dialects, a minimum duration of 30 minutes per variant, and a standardized audio format. The following steps outline the methodology, implemented using Python with the \texttt{datasets} library.
+
+\begin{enumerate}
+    \item \textbf{Loading Raw Datasets}:
+        Three datasets were selected to represent the target linguistic variants:
+        \begin{itemize}
+            \item \textbf{Egyptian Arabic}: The \texttt{MightyStudent/Egyptian-ASR-MGB-3} dataset (train split) provided conversational and broadcast audio in the Egyptian dialect.
+            \item \textbf{Classical Arabic}: The \texttt{MBZUAI/ClArTTS} dataset (train split) included recitations and formal speech in Classical Arabic.
+            \item \textbf{MSA}: The \texttt{halabi2016/arabic\_speech\_corpus} dataset (train split) contained formal speech in Modern Standard Arabic.
+        \end{itemize}
+        Each dataset was loaded using the \texttt{load\_dataset} function from the \texttt{datasets} library.
+
+    \item \textbf{Column Standardization}:
+        To ensure consistency, only the \texttt{audio} and \texttt{text} columns were retained. For the Egyptian dataset, the \texttt{sentence} column was renamed to \texttt{text}. The Classical Arabic dataset required reformatting to align its audio structure with the others, using a mapping function to wrap audio data into the standard format (\texttt{\{"array", "sampling\_rate"\}}). Unnecessary columns were removed using the \texttt{remove\_columns} method.
+
+    \item \textbf{Subsampling Classical Arabic}:
+        The Classical Arabic dataset (\texttt{ClArTTS}) was significantly larger than needed. To balance the dataset and reduce processing time, it was shuffled with a fixed seed (0) and subsampled to 1000 examples using the \texttt{select} method.
+
+    \item \textbf{Audio Standardization}:
+        All audio clips were standardized to a 16 kHz sampling rate using the \texttt{cast\_column} method with the \texttt{Audio} feature from the \texttt{datasets} library. This ensured compatibility across datasets and alignment with standard ASR model requirements.
+
+    \item \textbf{Selecting Balanced Subsets}:
+        To achieve a minimum duration of 30 minutes (1800 sec) per variant, a custom function was implemented to:
+        \begin{enumerate}
+            \item Shuffle each dataset with a fixed seed (1) for reproducibility.
+            \item Iterate through examples, calculating the duration of each audio clip (\texttt{len(array) / sampling\_rate}).
+            \item Selected examples until the cumulative duration reached or exceeded 1800 seconds.
+            \item Stored the duration as a new column (\texttt{duration}) for later analysis.
+        \end{enumerate}
+        The selected examples were converted back into \texttt{Dataset} objects using \texttt{Dataset.from\_list}.
+
+    \item \textbf{Text Normalization for MSA}:
+        The MSA dataset's text was encoded in Buckwalter transliteration. A \texttt{buckwalter\_to\_arabic} function was applied to convert these transcriptions to standard Arabic script, ensuring consistency with the other datasets.
+
+    \item \textbf{Combining Datasets}:
+        The balanced subsets for Egyptian Arabic, Classical Arabic, and MSA were concatenated into a single dataset using \texttt{concatenate\_datasets}. This combined dataset served as the final benchmarking corpus.
+
+\end{enumerate}
+
+
+% Discussing dataset characteristics and limitations
+The resulting dataset is balanced across the three linguistic variants, with each contributing at least 30 minutes of audio. The use of real-world datasets ensures diversity in speakers, background noise, and recording conditions, enhancing the robustness of the benchmarking process. However, limitations include:
+\begin{itemize}
+    \item Potential biases in the source datasets (e.g., over-representation of formal speech in MSA).
+    \item Limited dialectal diversity (only Egyptian dialect included among dialects).
+    \item Dependence on the quality of original transcriptions, which may contain errors.
+\end{itemize}
+
+
+\subsubsection{Used Models}
+\begin{enumerate}
+    \item \textbf{wav2vec2-large-xlsr-53-arabic:} The facebook/wav2vec2-large-xlsr-53-arabic model, is a fine-tuned variant of the wav2vec2-large-xlsr-53 model, specifically optimized for Arabic automatic speech recognition (ASR). The base model was pre-trained on 56,000 hours of multilingual audio data across 53 languages using a self-supervised learning approach with the wav2vec 2.0 framework, which combines contrastive learning and masked language modeling to extract robust speech representations. The Arabic fine-tuning was performed on datasets such as Common Voice Arabic and MGB-2, enhancing its ability to transcribe Arabic speech accurately. The model features 24 transformer layers, a model dimension of 1024, and 317 million parameters, supporting 16kHz sampled audio. It is licensed under Apache 2.0 and intended for research purposes.
+    
+
+    \item \textbf{wav2vec2-large-xlsr-53-arabic-egyptian:} The facebook/wav2vec2-large-xlsr-53-arabic-egyptian mode, is another fine-tuned variant of the wav2vec2-large-xlsr-53 model, tailored specifically for Egyptian Arabic, a dialect of Arabic. It inherits the pre-training from the base model. The fine-tuning process focused on Egyptian Arabic datasets, such as those from the Arabic Speech Corpus, to improve recognition of dialectal features. The architecture remains consistent with the base model, featuring 24 transformer layers, a 1024-dimensional model, and 317 million parameters, supporting 16kHz audio. It is also licensed under Apache 2.0 and aimed at research applications.
+
+    \item \textbf{whisper-large-v3:} The openai/whisper-large-v3 model, is an advanced version of OpenAI’s Whisper family, designed for robust multilingual speech recognition. Pre-trained on 680,000 hours of audio data across 98 languages, including Arabic, Whisper-large-v3 uses an encoder-decoder transformer architecture with 1550 million parameters. It was trained on a diverse dataset covering various accents and noise conditions, enabling it to handle a wide range of speech inputs. The model supports tasks beyond ASR, such as translation and language identification, and is optimized for 16kHz audio. It is licensed under the MIT License and intended for research and commercial use, with improvements over previous versions in transcription accuracy and robustness.
+
+    \item \textbf{Whisper Small-Ar:} The Whisper Small-Ar model, This model is a fine-tuned version of openai/whisper-small for Arabic ASR . It achieves  more efficient while retaining good performance for Arabic transcription. It supports 16kHz audio and is typically licensed under MIT, aimed at research and lightweight ASR applications.
+
+    \item \textbf{HuBERT Egyptian CTC:} The HuBERT Egyptian CTC model, Is a fine-tuned version of the HuBERT (Hidden-Unit BERT) model for Egyptian Arabic on the MGB-3 and Egyptian Arabic Conversational Speech Corpus datasets, achieving a state of the art for Egyptian Arabic with WER.
+
+    \item \textbf{facebook/seamless-m4t-v2-large:} The facebook/seamless-m4t-v2-large model, is part of the SeamlessM4T family, a multimodal and multilingual model for speech-to-text, text-to-speech, and translation across nearly 100 languages, including Arabic. It features 2.3 billion parameters and was pre-trained on 443,000 hours of speech and 29 billion text sentences, utilizing web-scale data like SeamlessAlign for aligned speech-text pairs. The model employs a dual-encoder architecture (one for speech, one for text) with a shared transformer decoder, enabling seamless modality transitions. It supports 16kHz audio and is licensed under CC BY-NC 4.0, intended for research purposes.
+\end{enumerate}
+
+
+
+\subsection{Results}
+
+\subsubsection{Results Table}
+The Table~\ref{tab:res} presents the Character Error Rate (CER) results for the previously mentioned Automatic Speech Recognition (ASR) models evaluated on The defined dataset.
+
+\begin{table}[h]
+    \centering
+    \caption{ASR Model Performance (CER)}
+    \begin{tabular}{lclc}
+        \toprule
+          & \textbf{Model} & \textbf{CER} \\
+        \midrule
+        1& wav2vec2-large-xlsr-53-arabic & 0.232978 \\
+        2& wav2vec2-large-xlsr-53-arabic-egyptian & 0.430803 \\
+        3& whisper-large-v3 & 0.396615 \\
+        4& Whisper Small-Ar & 0.384210 \\
+        5& HuBERT Egyptian CTC & 0.395884 \\
+        6& facebook/seamless-m4t-v2-large & 0.41177 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:res}
+\end{table}
+
+\subsubsection{Results Analysis}
+
+% Individual analysis of each model
+\textbf{Individual Model Performance:}
+
+\begin{enumerate}
+    \item \textbf{wav2vec2-large-xlsr-53-arabic CER: 0.232978}: It demonstrates strong performance for Arabic ASR, likely due to its fine-tuning on Arabic datasets like Common Voice Arabic and MGB-2, following pre-training on 56,000 hours of multilingual audio. Its architecture (24 transformer layers, 317 million parameters) and the wav2vec 2.0 framework’s focus on contextualized speech representations enable it to effectively capture Arabic phonetic nuances, aligning with its design for robust multilingual ASR.
+    
+    \item \textbf{wav2vec2-large-xlsr-53-arabic-egyptian CER: 0.430803}: This model targets Egyptian Arabic but shows a higher error rate. Despite pre-training on 56,000 hours of audio, its fine-tuning on Egyptian Arabic datasets like the Arabic Speech Corpus may be limited by data scarcity or the dialect’s divergence from Modern Standard Arabic (MSA), This suggests challenges in dialectal ASR without extensive dialect-specific data.
+    
+    \item \textbf{whisper-large-v3 CER: 0.396615}:The moderate performance may reflect its broad multilingual focus, potentially diluting Arabic-specific accuracy, as it also supports translation and language identification, introducing trade-offs in pure ASR tasks.
+    
+    \item \textbf{Whisper Small-ArCER: 0.384210}: It suggests that Arabic-specific fine-tuning enhances efficiency, as noted in Whisper’s documentation, highlighting the value of targeted optimization over model size for specific languages.
+    
+    \item \textbf{HuBERT Egyptian CTC CER: 0.395884}: Indicates challenges with Egyptian Arabic, possibly due to limited fine-tuning data or dialectal complexity, despite HuBERT’s strength in acoustic representation learning via self-supervised clustering, as per its documentation.
+    
+    \item \textbf{facebook/seamless-m4t-v2-large CER: 0.41177}: This 2.3 billion-parameter model was pre-trained on 443,000 hours of speech across 100 languages. Its higher CER may stem from its multimodal design (supporting speech-to-text, text-to-speech, and translation), which, as noted in the documentation, lacks Arabic-specific fine-tuning, impacting its ability to handle Arabic speech nuances as effectively as specialized models.
+\end{enumerate}
+
+% Collective analysis of all models
+\textbf{Collective Analysis:}
+
+The models exhibit a CER range from 0.232978 to 0.430803, reflecting varying success in Arabic ASR. The 
+
+\texttt{wav2vec2-large-xlsr-53-arabic} model achieves the lowest CER, benefiting from targeted Arabic fine-tuning, as highlighted in its documentation. Dialect-focused models (\texttt{wav2vec2-large-xlsr-53-arabic-egyptian}, \texttt{HuBERT Egyptian CTC}) show higher CERs, suggesting challenges with Egyptian Arabic due to limited dialect-specific data or phonetic divergence from MSA. General-purpose models like \texttt{whisper-large-v3} and \texttt{facebook/seamless-m4t-v2-large} perform moderately, likely due to their broader multilingual focus, which may reduce Arabic-specific accuracy. Notably, \texttt{Whisper Small-Ar} outperforms its larger counterpart, indicating that fine-tuning can be more effective than model size, a trend supported by Whisper’s documentation. Overall, the results underscore the importance of language-specific fine-tuning for Arabic ASR, particularly for dialects, and suggest that multimodal or generalized models may face trade-offs in performance for targeted tasks like Arabic speech transcription.
 
 
 \end{document}
+
