@@ -573,7 +573,7 @@ The Retrieval-Augmented Generation (RAG) system extends the retrieval interface 
 \end{enumerate}
 \subsubsection{Analysis Of Retrieval System Results }
 
-The retrieval system results for the Arabic queries based on \textit{One Thousand and One Nights} demonstrate a clear distinction between \textbf{classical (TF-IDF)} and \textbf{semantic (embedding-based)} search methods:
+The retrieval system results demonstrate a clear distinction between \textbf{classical (TF-IDF)} and \textbf{semantic (embedding-based)} search methods:
 
 \begin{itemize}
     \item \textbf{Classical Search (TF-IDF)}: This method consistently retrieves relevant paragraphs with higher precision for queries directly referencing key terms (e.g., Query 2: \arabicfont \RL{من الأكبر سنًّا بين شهريار وشاهزمان} yields a top result with a score of 0.422, accurately identifying Shahryar as the elder). However, it struggles with queries requiring deeper contextual understanding (e.g., Query 6: \arabicfont \RL{ما الأمر المريع الذى خطط له شهريار} returns less relevant results like the general story of Shahryar and Shahrazad, score 0.333). This highlights TF-IDF's reliance on keyword matching, which can miss nuanced meanings.
@@ -805,7 +805,7 @@ The Retrieval-Augmented Generation (RAG) system results showcase the impact of c
 
     \item \textbf{Classical RAG}: Answers using TF-IDF-retrieved context are more accurate for queries with explicit keywords (e.g., Query 1: \arabicfont \RL{من هم شهريار وشاهزمان} correctly identifies them as brother kings, score 0.3299). However, it misinterprets nuanced queries (e.g., Query 3: \arabicfont \RL{ما السبب الرئيسي وراء أحزان شاهزمان} wrongly attributes his sadness to unrelated events, score 0.0795), reflecting TF-IDF’s keyword bias.
 
-    \item \textbf{Semantic RAG}: Semantic context improves answers for complex queries (e.g., Query 5: \arabicfont \RL{لماذا قرر شهريار أنه لا يمكن الثقة في أي امرأة قط} accurately links his decision to his wife’s betrayal, distance 0.8278). Yet, it falters in simpler cases (e.g., Query 8: \arabicfont \RL{من دينارزاد} misidentifies her as a character in \textit{Aladdin}, distance 1.3227), indicating overgeneralization by embeddings.
+    \item \textbf{Semantic RAG}: Semantic context improves answers for complex queries (e.g., Query 5: \arabicfont \RL{لماذا قرر شهريار أنه لا يمكن الثقة في أي امرأة قط} accurately links his decision to his brother's wife’s betrayal, distance 0.8278). Yet, it falters in simpler cases (e.g., Query 8: \arabicfont \RL{من دينارزاد} misidentifies her as a character in \textit{Aladdin}, distance 1.3227), indicating overgeneralization by embeddings.
 
     \item \textbf{Overall}: RAG significantly enhances answer quality over the baseline, with classical RAG excelling in straightforward queries and semantic RAG better handling nuanced ones. Errors in both methods (e.g., Query 9’s misattributions) suggest that improving retrieval relevance and context selection (e.g., including adjacent paragraphs) could further boost performance. The system’s ability to display multiple answer types aids evaluation but highlights the need for refined retrieval to minimize inaccuracies.
 \end{itemize}
