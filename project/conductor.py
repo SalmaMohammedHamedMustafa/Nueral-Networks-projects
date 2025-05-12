@@ -13,18 +13,124 @@ from typing import List
 from crewai import Agent, Task, Crew, Process
 from crewai_tools import tool
 from langchain_openai import ChatOpenAI
+import smtplib
+from email.mime.text import MIMEText
+import datetime
+import pickle
+import os.path
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Environment setup
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/salma/college/nueral_networks/Dr_mohsen/project/interviewai-459420-ddd596af82a8.json"  # Update with your path
-OPENAI_API_KEY = ""  # Replace with your OpenAI API key
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS_KEY")
+GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD_KEY")
+RECIPIENT_EMAIL = os.environ.get("RECIPIENT_EMAIL_KEY")
+
+# Validate environment variables
+if not OPENAI_API_KEY:
+    raise ValueError("Missing required environment variable: OPENAI_API_KEY")
+if not all([GMAIL_ADDRESS, GMAIL_APP_PASSWORD, RECIPIENT_EMAIL]):
+    raise ValueError("Missing required environment variables: GMAIL_ADDRESS_KEY, GMAIL_APP_PASSWORD_KEY, or RECIPIENT_EMAIL_KEY")
+
+# Output directory
+output_dir = "./ai-agent-output"
+os.makedirs(output_dir, exist_ok=True)
 
 # Initialize clients
 tts_client = texttospeech.TextToSpeechClient()
 stt_client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Output directory
-output_dir = "./ai-agent-output"
-os.makedirs(output_dir, exist_ok=True)
+# Google Calendar API scopes
+SCOPES = ['https://www.googleapis.com/auth/calendar.events']
+
+def create_and_email_meet_link(
+    gmail_address: str,
+    app_password: str,
+    recipient_email: str,
+    interview_script: dict,
+    subject: str = "TechInterviewerAI: Your Interview Questions and Meeting Link",
+    event_summary: str = "TechInterviewerAI Mock Interview",
+    duration_minutes: int = 30
+) -> str:
+    """
+    1. Creates a 1-on-1 Google Meet in your primary calendar.
+    2. Emails the generated Meet link and interview questions to the recipient via SMTP using your App Password.
+    Returns the Meet URL.
+    """
+    creds = None
+    token_path = 'token.pickle'
+
+    # 1. Load or obtain OAuth2 credentials for Calendar API
+    if os.path.exists(token_path):
+        with open(token_path, 'rb') as token:
+            creds = pickle.load(token)
+    # If no (valid) credentials, let user log in.
+    if not creds or not creds.valid:
+        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+        creds = flow.run_local_server(port=0)
+        with open(token_path, 'wb') as token:
+            pickle.dump(creds, token)
+
+    # 2. Build the Calendar service
+    service = build('calendar', 'v3', credentials=creds)
+
+    # 3. Create an event with conferenceDataVersion=1 to generate a Meet link
+    now = datetime.datetime.utcnow()
+    start = now.isoformat() + 'Z'  # 'Z' indicates UTC time
+    end = (now + datetime.timedelta(minutes=duration_minutes)).isoformat() + 'Z'
+
+    event_body = {
+        'summary': event_summary,
+        'start': {'dateTime': start},
+        'end':   {'dateTime': end},
+        'conferenceData': {
+            'createRequest': {
+                'requestId': f"meet-{now.timestamp()}",
+                'conferenceSolutionKey': {'type': 'hangoutsMeet'}
+            }
+        }
+    }
+
+    created = service.events().insert(
+        calendarId='primary',
+        body=event_body,
+        conferenceDataVersion=1
+    ).execute()
+
+    meet_link = created['conferenceData']['entryPoints'][0]['uri']
+
+    # 4. Send the link and script via Gmail SMTP
+    body = f"""
+    Dear User,
+
+    Your interview questions have been generated successfully. Below is a summary:
+
+    {json.dumps(interview_script, indent=2, ensure_ascii=False)}
+
+    A mock interview session has been scheduled. Please join using the following link:
+    {meet_link}
+
+    Best regards,
+    TechInterviewerAI Team
+    """
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = gmail_address
+    msg['To'] = recipient_email
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        smtp.login(gmail_address, app_password)
+        smtp.send_message(msg)
+
+    print(f"Email sent successfully to {recipient_email}")
+    return meet_link
 
 # Pydantic models
 class InterviewInteraction(BaseModel):
@@ -42,8 +148,6 @@ class Evaluation(BaseModel):
 
 class InterviewReport(BaseModel):
     evaluations: List[Evaluation] = Field(..., title="List of evaluations for each question")
-
-    
 
 def record_audio_vad(filename: str, sample_rate: int = 16000, frame_duration: int = 30, 
                      silence_duration: float = 1, max_duration: float = 60, 
@@ -310,5 +414,21 @@ crew = Crew(
 
 # Run the crew
 if __name__ == "__main__":
+    # Load interview script and create/send Google Meet link
+    script_file = "interviewer_script.json"
+    try:
+        with open(script_file, 'r', encoding='utf-8') as f:
+            script_data = json.load(f)
+        meet_link = create_and_email_meet_link(
+            gmail_address=GMAIL_ADDRESS,
+            app_password=GMAIL_APP_PASSWORD,
+            recipient_email=RECIPIENT_EMAIL,
+            interview_script=script_data
+        )
+        print(f"Google Meet link created: {meet_link}")
+    except Exception as e:
+        print(f"Failed to create Meet link or send email: {str(e)}")
+    
+    # Start the interview process
     crew.kickoff()
     print("Interview conducted and evaluated. Check output files in", output_dir)
