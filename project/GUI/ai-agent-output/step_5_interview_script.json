@@ -1,0 +1,54 @@
+{
+  "questions": [
+    {
+      "question": "إزاي بتستخدم AWS وKubernetes في إدارة البنية التحتية ككود؟",
+      "type": "Technical",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "إيه هي أفضل الممارسات لتطبيق CI/CD في بيئة سحابية؟",
+      "type": "Technical",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "إزاي بتتعامل مع التحديات اللي بتواجهها في مراقبة وتسجيل الأنظمة في بيئة سحابية؟",
+      "type": "Problem Solving",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "إيه هي الأدوات اللي بتستخدمها لمراقبة وتسجيل الأداء في الأنظمة السحابية؟",
+      "type": "Technical",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "إزاي بتطبق منهجيات Agile في دورة حياة تطوير البرمجيات؟",
+      "type": "Behavioral",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "إيه هي الاستراتيجيات اللي بتستخدمها لتأمين CI/CD pipelines؟",
+      "type": "Technical",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "إزاي بتتعامل مع التغييرات في متطلبات المشروع أثناء دورة حياة التطوير؟",
+      "type": "Behavioral",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "إيه هي التحديات اللي واجهتها في استخدام Infrastructure as Code وإزاي تغلبت عليها؟",
+      "type": "Problem Solving",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "إزاي بتضمن إن التطبيقات اللي بتشتغل في حاويات (Containers) بتكون متوافقة مع بعضها؟",
+      "type": "Technical",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "إيه هي الخطوات اللي بتتبعها لتحسين أداء CI/CD pipelines؟",
+      "type": "Technical",
+      "difficulty": "Hard"
+    }
+  ]
+}
