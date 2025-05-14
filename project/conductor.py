@@ -13,124 +13,24 @@ from typing import List
 from crewai import Agent, Task, Crew, Process
 from crewai_tools import tool
 from langchain_openai import ChatOpenAI
-import smtplib
-from email.mime.text import MIMEText
-import datetime
-import pickle
-import os.path
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 # Environment setup
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/salma/college/nueral_networks/Dr_mohsen/project/interviewai-459420-ddd596af82a8.json"  # Update with your path
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
-GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS_KEY")
-GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD_KEY")
-RECIPIENT_EMAIL = os.environ.get("RECIPIENT_EMAIL_KEY")
-
-# Validate environment variables
-if not OPENAI_API_KEY:
-    raise ValueError("Missing required environment variable: OPENAI_API_KEY")
-if not all([GMAIL_ADDRESS, GMAIL_APP_PASSWORD, RECIPIENT_EMAIL]):
-    raise ValueError("Missing required environment variables: GMAIL_ADDRESS_KEY, GMAIL_APP_PASSWORD_KEY, or RECIPIENT_EMAIL_KEY")
-
-# Output directory
-output_dir = "./ai-agent-output"
-os.makedirs(output_dir, exist_ok=True)
+OPENAI_API_KEY = "sk-..."  # Replace with your OpenAI API key
+#set OPENAI_API_KEY as an environment variable or replace with your key
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 # Initialize clients
 tts_client = texttospeech.TextToSpeechClient()
 stt_client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Google Calendar API scopes
-SCOPES = ['https://www.googleapis.com/auth/calendar.events']
-
-def create_and_email_meet_link(
-    gmail_address: str,
-    app_password: str,
-    recipient_email: str,
-    interview_script: dict,
-    subject: str = "TechInterviewerAI: Your Interview Questions and Meeting Link",
-    event_summary: str = "TechInterviewerAI Mock Interview",
-    duration_minutes: int = 30
-) -> str:
-    """
-    1. Creates a 1-on-1 Google Meet in your primary calendar.
-    2. Emails the generated Meet link and interview questions to the recipient via SMTP using your App Password.
-    Returns the Meet URL.
-    """
-    creds = None
-    token_path = 'token.pickle'
-
-    # 1. Load or obtain OAuth2 credentials for Calendar API
-    if os.path.exists(token_path):
-        with open(token_path, 'rb') as token:
-            creds = pickle.load(token)
-    # If no (valid) credentials, let user log in.
-    if not creds or not creds.valid:
-        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-        creds = flow.run_local_server(port=0)
-        with open(token_path, 'wb') as token:
-            pickle.dump(creds, token)
-
-    # 2. Build the Calendar service
-    service = build('calendar', 'v3', credentials=creds)
-
-    # 3. Create an event with conferenceDataVersion=1 to generate a Meet link
-    now = datetime.datetime.utcnow()
-    start = now.isoformat() + 'Z'  # 'Z' indicates UTC time
-    end = (now + datetime.timedelta(minutes=duration_minutes)).isoformat() + 'Z'
-
-    event_body = {
-        'summary': event_summary,
-        'start': {'dateTime': start},
-        'end':   {'dateTime': end},
-        'conferenceData': {
-            'createRequest': {
-                'requestId': f"meet-{now.timestamp()}",
-                'conferenceSolutionKey': {'type': 'hangoutsMeet'}
-            }
-        }
-    }
-
-    created = service.events().insert(
-        calendarId='primary',
-        body=event_body,
-        conferenceDataVersion=1
-    ).execute()
-
-    meet_link = created['conferenceData']['entryPoints'][0]['uri']
-
-    # 4. Send the link and script via Gmail SMTP
-    body = f"""
-    Dear User,
-
-    Your interview questions have been generated successfully. Below is a summary:
-
-    {json.dumps(interview_script, indent=2, ensure_ascii=False)}
-
-    A mock interview session has been scheduled. Please join using the following link:
-    {meet_link}
-
-    Best regards,
-    TechInterviewerAI Team
-    """
-    msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = gmail_address
-    msg['To'] = recipient_email
-
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login(gmail_address, app_password)
-        smtp.send_message(msg)
-
-    print(f"Email sent successfully to {recipient_email}")
-    return meet_link
+# Output directory
+output_dir = "/home/salma/college/nueral_networks/Dr_mohsen/project/ai-agent-output"
+try:
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"Output directory created or exists at: {output_dir}")
+except Exception as e:
+    print(f"Error creating output directory: {e}")
 
 # Pydantic models
 class InterviewInteraction(BaseModel):
@@ -148,6 +48,8 @@ class Evaluation(BaseModel):
 
 class InterviewReport(BaseModel):
     evaluations: List[Evaluation] = Field(..., title="List of evaluations for each question")
+
+    
 
 def record_audio_vad(filename: str, sample_rate: int = 16000, frame_duration: int = 30, 
                      silence_duration: float = 1, max_duration: float = 60, 
@@ -313,38 +215,81 @@ def speech_to_text_tool(audio_file: str) -> str:
 
 # Tool to conduct the interview using regular functions
 @tool
-def conduct_interview_tool(script_file: str) -> dict:
+def conduct_interview_tool(script_file: str = "/home/salma/college/nueral_networks/Dr_mohsen/project/interviewer_script.json") -> dict:
     """Conduct the interview by reading the script, recording responses with VAD, and transcribing them."""
-    with open(script_file, 'r', encoding='utf-8') as f:
-        script_data = json.load(f)
+    print(f"Attempting to open script file: {script_file}")
+    try:
+        with open(script_file, 'r', encoding='utf-8') as f:
+            script_data = json.load(f)
+        print(f"Script file content: {script_data}")
+    except Exception as e:
+        print(f"Error loading script file: {e}")
+        return {"interactions": []}
+    
     questions = [line['line'] for line in script_data['script']]
-
+    if not questions:
+        print("Error: No questions found in script file")
+        return {"interactions": []}
+    print(f"Loaded {len(questions)} questions: {questions}")
+    
     interactions = []
     for i, question in enumerate(questions, start=1):
-        print(f"\nQuestion {i}: {question}")
+        print(f"\nProcessing Question {i}: {question}")
         audio_file = os.path.join(output_dir, f"question_{i}.mp3")
-        
-        # Generate and play question audio
-        text_to_speech(question, audio_file)
-        print("Question audio played. Preparing to record response.")
+        try:
+            text_to_speech(question, audio_file)
+            print(f"Question audio generated: {audio_file}")
+        except Exception as e:
+            print(f"Error generating audio: {e}")
+            continue
 
         # Record response with VAD
         response_file = os.path.join(output_dir, f"response_{i}.wav")
-        print("Recording started. Please speak now.")
-        record_audio_vad(response_file)
-        print("Recording stopped.")
+        print("Recording started. Please speak now (or simulating response for remote execution).")
+        try:
+            record_audio_vad(response_file)
+            print(f"Recording stopped: {response_file}")
+        except Exception as e:
+            print(f"Error recording audio: {e}")
+            # Simulate a response for testing in remote environment
+            transcription = f"Simulated response for question {i} due to missing audio input"
+            interactions.append({
+                "question": question,
+                "audio_file": audio_file,
+                "response_audio_file": response_file,
+                "transcribed_response": transcription
+            })
+            print(f"Simulated interaction: {interactions[-1]}")
+            continue
 
         # Transcribe response
-        transcription = speech_to_text(response_file)
+        try:
+            transcription = speech_to_text(response_file)
+            print(f"Transcription: {transcription}")
+        except Exception as e:
+            print(f"Error transcribing: {e}")
+            transcription = "Transcription failed"
 
         # Store interaction
-        interactions.append({
+        interaction = {
             "question": question,
             "audio_file": audio_file,
             "response_audio_file": response_file,
             "transcribed_response": transcription
-        })
+        }
+        interactions.append(interaction)
+        print(f"Interaction recorded: {interaction}")
 
+    print(f"Total interactions recorded: {len(interactions)}")
+    # Manually save interactions to ensure step_10_interview_session.json is populated
+    session_file = os.path.join(output_dir, "step_10_interview_session.json")
+    try:
+        with open(session_file, 'w', encoding='utf-8') as f:
+            json.dump({"interactions": interactions}, f, ensure_ascii=False, indent=2)
+        print(f"Manually saved interactions to {session_file}")
+    except Exception as e:
+        print(f"Error saving interactions: {e}")
+    
     return {"interactions": interactions}
 
 # Interview Conductor Agent
@@ -379,12 +324,14 @@ evaluation_agent = Agent(
     verbose=True
 )
 
+
 # Evaluation Task
 evaluation_task = Task(
     description="\n".join([
-        "Read the interview session data from 'step_10_interview_session.json'.",
+        f"Read the interview session data from '{os.path.join(output_dir, 'step_10_interview_session.json')}'.",
         "Evaluate each response for correctness, clarity, and completeness.",
         "Assign a score from 1 to 5 and provide brief feedback.",
+        "If no interactions are found or responses are simulated, provide a default evaluation noting the simulation.",
         "Compile evaluations into a report."
     ]),
     expected_output="A JSON object with evaluations for each question, including scores and feedback.",
@@ -393,10 +340,12 @@ evaluation_task = Task(
     agent=evaluation_agent
 )
 
+
+
 # Interview Conductor Task
 interview_conductor_task = Task(
     description="\n".join([
-        "Conduct the interview by calling the conduct_interview_tool with the path to 'interviewer_script.json'.",
+        "Conduct the interview by calling the conduct_interview_tool with the path to '/home/salma/college/nueral_networks/Dr_mohsen/project/interviewer_script.json'.",
         "The tool will handle generating audio for each question, recording responses via VAD, transcribing them, and returning interaction data."
     ]),
     expected_output="A JSON object containing a list of interactions, each with the question, audio file paths, and transcribed response.",
@@ -412,23 +361,51 @@ crew = Crew(
     process=Process.sequential
 )
 
+
+
+
+
 # Run the crew
 if __name__ == "__main__":
-    # Load interview script and create/send Google Meet link
-    script_file = "interviewer_script.json"
     try:
-        with open(script_file, 'r', encoding='utf-8') as f:
-            script_data = json.load(f)
-        meet_link = create_and_email_meet_link(
-            gmail_address=GMAIL_ADDRESS,
-            app_password=GMAIL_APP_PASSWORD,
-            recipient_email=RECIPIENT_EMAIL,
-            interview_script=script_data
-        )
-        print(f"Google Meet link created: {meet_link}")
+        # Run the crew tasks sequentially
+        print("Starting crew execution...")
+        crew_result = crew.kickoff()
+        print("Crew execution completed.")
+
+        # Debug: Check task outputs
+        for task in crew.tasks:
+            task_output = task.output.json if task.output and hasattr(task.output, 'json') else 'No output'
+            print(f"Task {task.agent.role} output: {task_output}")
+
+        # Manually save evaluation output if not written by CrewAI
+        report_file = os.path.join(output_dir, "step_11_interview_report.json")
+        if not os.path.exists(report_file):
+            try:
+                eval_output = evaluation_task.output.json if evaluation_task.output and hasattr(evaluation_task.output, 'json') else None
+                if eval_output:
+                    with open(report_file, 'w', encoding='utf-8') as f:
+                        json.dump(json.loads(eval_output), f, ensure_ascii=False, indent=2)
+                    print(f"Manually saved evaluation report to {report_file}")
+                else:
+                    print("No evaluation output to save")
+            except Exception as e:
+                print(f"Error manually saving evaluation report: {e}")
+
+        # Verify output files and their contents
+        for file in ["step_10_interview_session.json", "step_11_interview_report.json"]:
+            file_path = os.path.join(output_dir, file)
+            if os.path.exists(file_path):
+                print(f"Output file found: {file_path}")
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = json.load(f)
+                        print(f"Contents of {file}: {json.dumps(content, indent=2, ensure_ascii=False)}")
+                except Exception as e:
+                    print(f"Error reading {file}: {e}")
+            else:
+                print(f"Output file missing: {file_path}")
+
+        print("Interview conducted and evaluated. Check output files in", output_dir)
     except Exception as e:
-        print(f"Failed to create Meet link or send email: {str(e)}")
-    
-    # Start the interview process
-    crew.kickoff()
-    print("Interview conducted and evaluated. Check output files in", output_dir)
+        print(f"Error during crew execution: {e}")
