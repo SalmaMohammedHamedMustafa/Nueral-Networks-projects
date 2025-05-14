@@ -1,7 +1,7 @@
 import os
 import json
 from crewai import Agent, Task, Crew, Process, LLM
-from crewai_tools import tool
+from crewai.tools import tool
 from tavily import TavilyClient
 from pydantic import BaseModel, Field
 from typing import List, Optional
@@ -12,7 +12,7 @@ import asyncio
 
 
 # --- Output Directory ---
-output_dir = "/home/salma/college/nueral_networks/Dr_mohsen/project/ai-agent-output"
+output_dir = "ai-agent-output"
 os.makedirs(output_dir, exist_ok=True)  # Ensure the output directory exists
 
 # --- Async Compatibility ---
@@ -102,15 +102,35 @@ def web_scraping_tool_for_agent(page_url: str) -> str:
 # **Input Processor Agent**
 input_processor_agent = Agent(
     role="Input Processor Agent",
-    goal="Analyze job details to identify technical level, skills, and problem-solving relevance.",
-    backstory="Designed for Arabic-speaking job seekers in the MENA tech market.",
+    goal="\n".join([
+        "To analyze user-provided job position, requirements, and company name.",
+        "To identify key technical skills and domain knowledge required for the job.",
+        "To determine the technical level of the job (entry, mid, senior).",
+        "To determine if problem-solving (PS) questions, such as algorithms or coding challenges, are relevant for the job role."
+    ]),
+    backstory="\n".join([
+        "The agent is the starting point for the TechInterviewerAI workflow, designed to support Arabic-speaking job seekers in the MENA tech market.",
+        "It analyzes job details to identify the key technical requirements and skills needed.",
+        "It determines the job's technical level and whether problem-solving questions are necessary.",
+        "Its analysis ensures the interview aligns with actual job expectations and requirements."
+    ]),
     llm=llm,
     verbose=True,
 )
 
+
 input_processor_task = Task(
-    description="Analyze job position, requirements, and company name to identify technical level, key skills, problem-solving relevance, and domain knowledge.",
-    expected_output="JSON object with job analysis.",
+    description="\n".join([
+        "The user provides the following input: job position ({job_position}), requirements ({requirements}), and company name ({company_name}).",
+        "Analyze the job details and identify:",
+        "1. The technical level of the job (entry, mid, senior) based on the requirements and responsibilities.",
+        "2. Extract a list of key technical skills required for this position (e.g., Python, TensorFlow, etc.).",
+        "3. Determine if problem-solving (PS) questions (e.g., algorithms, coding challenges) are relevant based on the job role.",
+        "4. Identify domain knowledge areas that would be important for this role.",
+        "Set include_ps to False only for non-technical roles (e.g., project management) or roles with no coding requirements.",
+        "The analysis should consider the context of the MENA tech job market."
+    ]),
+    expected_output="A JSON object containing job technical level, key skills list, problem-solving relevance, and domain knowledge areas.",
     output_file=os.path.join(output_dir, "step_1_job_analysis.json"),
     output_json=JobAnalysis,
     agent=input_processor_agent
@@ -119,33 +139,64 @@ input_processor_task = Task(
 # **Search Query Generator Agent**
 search_query_generator = Agent(
     role="Search Query Generator",
-    goal="Generate tailored search queries for interview questions.",
-    backstory="Specialized in creating effective search queries for job-specific interview questions.",
-    llm=llm,
+    goal="Generate tailored search queries for interview questions based on processed input",
+    backstory="I am an AI agent specialized in creating effective search queries "
+              "to find relevant interview questions based on job details and requirements.",
     verbose=True,
+    llm=llm,
 )
 
 search_query_generator_task = Task(
-    description="Generate search queries based on job analysis.",
-    expected_output="JSON file with search queries.",
+    description="\n".join([
+        "Using the job position '{job_position}', requirements, and company name '{company_name}':",
+        "Read the job analysis from the Input Processor agent.",
+        "Generate up to 10 comprehensive search queries for interview questions based on:",
+        "1. The job position and company name",
+        "2. The key technical skills identified by the Input Processor",
+        "3. The technical level of the job",
+        "4. Include problem-solving question queries if determined relevant by the Input Processor",
+        "5. Domain knowledge areas identified by the Input Processor",
+        "Queries must be specific, targeting skills, technologies, or question categories (e.g., 'Python Flask web development interview questions', 'REST API system design interview questions').",
+        "Avoid generic queries; focus on job-specific terms (e.g., 'Django backend development' instead of just 'software engineering').",
+        "Create a final set of search queries for interview questions."
+    ]),
+    expected_output="A JSON file containing an array of search queries for interview questions.",
     output_file=os.path.join(output_dir, "step_2_search_queries.json"),
     output_json=SearchQueries,
     agent=search_query_generator
 )
 
+
+
 # **Research Agent**
 research_agent = Agent(
     role="Research Agent",
-    goal="Retrieve relevant resources based on search queries.",
-    backstory="Gathers high-quality resources for MENA tech job seekers.",
+    goal="\n".join([
+        "To retrieve relevant resources based on the search queries provided by the Input Processor Agent.",
+        "To collect information on technical skills and interview question types for a specific job role.",
+        "To ensure resources are relevant to the MENA tech job market."
+    ]),
+    backstory="\n".join([
+        "The agent is designed to support TechInterviewerAI by gathering high-quality resources for Arabic-speaking job seekers preparing for technical interviews.",
+        "It uses search queries to find articles, job descriptions, and interview question examples relevant to the MENA tech industry.",
+        "The agent prioritizes reliable and specific content to inform the generation of interview questions."
+    ]),
     llm=llm,
     verbose=True,
     tools=[search_engine_tool]
 )
 
 research_task = Task(
-    description="Search for resources using queries from step_2_search_queries.json.",
-    expected_output="JSON object with search results.",
+    description="\n".join([
+        "The task is to search for resources based on the English search queries provided in the previous task's output (e.g., 'step_2_search_queries.json').",
+        "Collect results for each query, focusing on technical skills, technologies, and interview question types relevant to the job role.",
+        "Ignore suspicious links, blogs, or non-relevant content (e.g., unrelated tutorials, general career advice).",
+        "Ignore search results with a relevance score less than {score_th} (e.g., 0.7).",
+        "Results should prioritize content relevant to the MENA tech job market, such as regional job boards, tech forums, or industry reports.",
+        "Return up to 3 results per query to keep the demo manageable.",
+        "The search results will be used to generate tailored interview questions in the next stage."
+    ]),
+    expected_output="A JSON object containing a list of search results, each with a title, URL, content snippet, relevance score, and the query used.",
     output_json=AllSearchResults,
     output_file=os.path.join(output_dir, "step_3_research_results.json"),
     agent=research_agent
@@ -154,16 +205,35 @@ research_task = Task(
 # **Web Scraper Agent**
 web_scraper_agent = Agent(
     role="Web Scraper Agent",
-    goal="Scrape webpages to extract skills, technologies, and interview questions.",
-    backstory="Extracts actionable insights for question generation.",
+    goal="\n".join([
+        "To scrape and analyze webpages from provided URLs to extract skills, technologies, and example interview questions.",
+        "To produce structured data relevant to technical interview question generation for the MENA tech market."
+    ]),
+    backstory="\n".join([
+        "The Web Scraper Agent is a specialized component of TechInterviewerAI, designed to collect and analyze web data for Arabic-speaking job seekers.",
+        "It processes job postings, tech blogs, and interview guides to extract actionable insights for question generation.",
+        "It collaborates with the Question Generator Agent by providing high-quality scraped data."
+    ]),
     llm=llm,
     verbose=True,
-    tools=[web_scraping_tool_for_agent]
+    tools=[web_scraping_tool_for_agent]  # Provided tool, not implemented here
 )
 
 web_scraper_task = Task(
-    description="Scrape URLs from step_3_research_results.json.",
-    expected_output="JSON object with scraped data.",
+    description="\n".join([
+        "The task is to scrape and analyze webpages using URLs from 'step_3_research_results.json' for the job role of {job_position} with requirements {requirements} and optional company {company_name}.",
+        "Use the provided 'web_scraping_tool' to extract data from each URL, including skills (e.g., Python, SQL), technologies (e.g., Django, PostgreSQL), and example interview questions.",
+        "For each webpage, produce a structured output with:",
+        "  - The page URL.",
+        "  - A list of skills with names and optional descriptions.",
+        "  - A list of technologies with names and optional descriptions.",
+        "  - A list of example interview questions (at least one per page).",
+        "  - An optional source type (e.g., job posting, interview guide, tech blog).",
+        "Ensure at least one of skills, technologies, or question_examples is non-empty for each page.",
+        "Analyze the scraped content to ensure relevance to the MENA tech market and the job role.",
+        "The output will be used by the Question Generator Agent to create interview questions."
+    ]),
+    expected_output="A JSON object containing a list of scraped webpages, each with URL, skills, technologies, question examples, and source type.",
     output_json=AllScrapedPages,
     output_file=os.path.join(output_dir, "step_4_scraped_data.json"),
     agent=web_scraper_agent
@@ -246,5 +316,5 @@ if __name__ == "__main__":
 
     # Format the output script for conductor.py
     input_script_file = os.path.join(output_dir, "step_5_interview_script.json")
-    output_script_file = "/home/salma/college/nueral_networks/Dr_mohsen/project/interviewer_script.json"
+    output_script_file = "interviewer_script.json"
     format_script_for_conductor(input_script_file, output_script_file)
