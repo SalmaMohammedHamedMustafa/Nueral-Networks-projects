@@ -15,7 +15,8 @@ import shutil
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/salma/college/nueral_networks/Dr_mohsen/project/interviewai-459420-ddd596af82a8.json"
 os.environ["OPENAI_API_KEY"] = "" # Replace with your OpenAI API key
 os.environ["TAVILY_API_KEY"] = ""  # Replace with your Tavily API key
-os.environ["GOOGLE_API_KEY"] = ""   # Replace with your Google API key
+os.environ["GOOGLE_API_KEY"] = "" # Replace with your Google API key
+
 
 # --- Output Directory ---
 output_dir = "ai-agent-output"
@@ -419,9 +420,7 @@ if __name__ == "__main__":
         shutil.copy(input_script_file, output_script_file)
         print(f"Script successfully moved to {output_script_file}")
         
-        # Create a backup copy
-        shutil.copy(input_script_file, output_script_file + ".backup")
-        print(f"Backup copy created at {output_script_file}.backup")
+
     except Exception as e:
         print(f"Error moving script: {str(e)}")
 
