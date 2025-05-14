@@ -1,15 +1,21 @@
 import os
 import json
 from crewai import Agent, Task, Crew, Process, LLM
-from crewai.tools import tool
+from crewai_tools import tool
 from tavily import TavilyClient
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import nest_asyncio
 from crawl4ai import AsyncWebCrawler
 import asyncio
+import argparse
+import shutil
 
-
+# Environment setup
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/salma/college/nueral_networks/Dr_mohsen/project/interviewai-459420-ddd596af82a8.json"
+os.environ["OPENAI_API_KEY"] = "" # Replace with your OpenAI API key
+os.environ["TAVILY_API_KEY"] = ""  # Replace with your Tavily API key
+os.environ["GOOGLE_API_KEY"] = ""   # Replace with your Google API key
 
 # --- Output Directory ---
 output_dir = "ai-agent-output"
@@ -21,9 +27,8 @@ nest_asyncio.apply()  # Enable nested async loops for compatibility
 # --- Initialize Clients and LLMs ---
 search_client = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
 llm = LLM(
-    model ='gemini/gemini-2.5-flash-preview-04-17',
+    model='gpt-4o-mini',
     temperature=0,
-    api_key=os.environ["GOOGLE_API_KEY"]
 )
 
 # --- Data Models ---
@@ -322,33 +327,77 @@ interview_crew = Crew(
     process=Process.sequential
 )
 
-# --- Format Output for conductor.py ---
-def format_script_for_conductor(input_script_file, output_script_file):
-    """Convert step_5_interview_script.json to interviewer_script.json format expected by conductor.py."""
-    try:
-        with open(input_script_file, 'r', encoding='utf-8') as f:
-            input_data = json.load(f)
-        
-        # Transform to conductor.py's expected format: {"script": [{"line": question}, ...]}
-        script = [{"line": q["question"]} for q in input_data["questions"]]
-        output_data = {"script": script}
-        
-        with open(output_script_file, 'w', encoding='utf-8') as f:
-            json.dump(output_data, f, ensure_ascii=False, indent=2)
-        print(f"Formatted script saved to {output_script_file}")
-    except FileNotFoundError:
-        print(f"Error: Input script file {input_script_file} not found.")
-    except Exception as e:
-        print(f"Error formatting script: {e}")
 
-# --- Main Execution ---
+
+def parse_arguments():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description='Run automated interview based on job description')
+    parser.add_argument('--job-description', type=str, help='Job description text', default=None)
+    parser.add_argument('--json-file', type=str, help='Path to JSON file containing job description', default=None)
+    return parser.parse_args()
+
+def extract_job_details(job_description):
+    """Extract relevant details from job description."""
+    # Simple extraction - in a real scenario, you might want to use NLP techniques
+    lines = job_description.split('\n')
+    job_position = lines[0].strip() if lines else "LLM Engineer"
+    
+    # Extract requirements section
+    requirements = ""
+    req_start = False
+    for line in lines:
+        if "Requirements:" in line:
+            req_start = True
+            continue
+        if req_start and line.strip():
+            requirements += line.strip() + " "
+    
+    # Default values if extraction failed
+    if not requirements:
+        requirements = job_description
+    
+    # Company name extraction (simplified)
+    company_name = "Agentic AI Solutions"
+    
+    return job_position, requirements, company_name
+
 if __name__ == "__main__":
-    # Example input data
-    job_position = "R&D AI ML Developer Intern"
-    requirements = """Design and develop scalable AI-driven applications using Python..."""  # Replace with full requirements
-    company_name = "Siemens"
+    args = parse_arguments()
+    
+    # Load job description from JSON file if path provided
+    if not args.job_description and args.json_file:
+        try:
+            with open(args.json_file, 'r') as f:
+                data = json.load(f)
+                args.job_description = data.get('jobDescription', '')
+        except Exception as e:
+            print(f"Error loading JSON file: {e}")
+    
+    # Or try to load from default location
+    if not args.job_description:
+        try:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            json_file = os.path.join(base_dir, "info.json")
+            if os.path.exists(json_file):
+                with open(json_file, 'r') as f:
+                    data = json.load(f)
+                    args.job_description = data.get('jobDescription', '')
+                    print(f"Loaded job description from {json_file}")
+        except Exception as e:
+            print(f"Error loading default JSON file: {e}")
+    
+    if not args.job_description:
+        # Fall back to example input data if no job description provided
+        job_position = "R&D AI ML Developer Intern"
+        requirements = """Design and develop scalable AI-driven applications using Python..."""
+        company_name = "Siemens"
+    else:
+        # Extract details from the provided job description
+        job_position, requirements, company_name = extract_job_details(args.job_description)
+        print(f"Extracted position: {job_position}")
+        print(f"Extracted company: {company_name}")
+    
     score_th = 0.7
-
     print("Starting Interview-eight crew...")
     try:
         result = interview_crew.kickoff(inputs={
@@ -360,8 +409,26 @@ if __name__ == "__main__":
         print("Interviewer crew completed successfully.")
     except Exception as e:
         print(f"Error during crew execution: {e}")
-
+    
     # Format the output script for conductor.py
-    input_script_file = os.path.join(output_dir, "step_5_interview_script.json")
-    output_script_file = "interviewer_script.json"
-    format_script_for_conductor(input_script_file, output_script_file)
+    # Use the absolute path provided since that's where the file actually exists
+    input_script_file = "/home/salma/college/nueral_networks/Dr_mohsen/project/ai-agent-output/step_5_interview_script.json"
+    output_script_file = "/home/salma/college/nueral_networks/Dr_mohsen/project/interviewer_script.json"
+    try:
+        # Directly move the input script file to the output script file
+        shutil.copy(input_script_file, output_script_file)
+        print(f"Script successfully moved to {output_script_file}")
+        
+        # Create a backup copy
+        shutil.copy(input_script_file, output_script_file + ".backup")
+        print(f"Backup copy created at {output_script_file}.backup")
+    except Exception as e:
+        print(f"Error moving script: {str(e)}")
+
+    # Also verify the file was created
+    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), output_script_file)
+    if os.path.exists(output_path):
+        print(f"Confirmed output file exists at: {output_path}")
+        print(f"File size: {os.path.getsize(output_path)} bytes")
+    else:
+        print(f"WARNING: Output file was not created at {output_path}")

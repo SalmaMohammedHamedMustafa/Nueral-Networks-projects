@@ -8,18 +8,19 @@ import threading
 import queue
 from google.cloud import texttospeech
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List
 from crewai import Agent, Task, Crew, Process
 from crewai_tools import tool
 from langchain_openai import ChatOpenAI
 
 # Environment setup
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/salma/college/nueral_networks/Dr_mohsen/project/interviewai-459420-ddd596af82a8.json"  # Update with your path
-OPENAI_API_KEY = "sk-..."  # Replace with your OpenAI API key
-#set OPENAI_API_KEY as an environment variable or replace with your key
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/salma/college/nueral_networks/Dr_mohsen/project/interviewai-459420-ddd596af82a8.json"
+os.environ["OPENAI_API_KEY"] = "" # Replace with your OpenAI API key
+os.environ["TAVILY_API_KEY"] = ""  # Replace with your Tavily API key
+os.environ["GOOGLE_API_KEY"] = ""   # Replace with your Google API key
 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # Initialize clients
 tts_client = texttospeech.TextToSpeechClient()
 stt_client = OpenAI(api_key=OPENAI_API_KEY)
@@ -40,7 +41,8 @@ class InterviewInteraction(BaseModel):
     transcribed_response: str = Field(..., title="Transcribed response")
 
 class InterviewSession(BaseModel):
-    interactions: List[InterviewInteraction] = Field(..., title="List of question-response interactions", min_items=1)
+    interactions: List[InterviewInteraction] = Field(..., title="List of question-response interactions", min_length=1)
+    model_config = ConfigDict(use_attribute_docstrings=True)
 
 class Evaluation(BaseModel):
     score: int = Field(..., ge=1, le=5, title="Score from 1 to 5")
@@ -48,8 +50,6 @@ class Evaluation(BaseModel):
 
 class InterviewReport(BaseModel):
     evaluations: List[Evaluation] = Field(..., title="List of evaluations for each question")
-
-    
 
 def record_audio_vad(filename: str, sample_rate: int = 16000, frame_duration: int = 30, 
                      silence_duration: float = 1, max_duration: float = 60, 
@@ -136,7 +136,8 @@ def record_audio_vad(filename: str, sample_rate: int = 16000, frame_duration: in
             wavfile.write(filename, sample_rate, recording)
             print(f"Recording saved to {filename}")
         else:
-            print("No audio recorded.")
+            print("No audio recorded. Please check your microphone.")
+            raise Exception("No audio recorded. Please check your microphone.")
     
     # Start recording
     print(f"Recording... Preparing with {initial_thinking_time} seconds of thinking time.")
@@ -226,7 +227,7 @@ def conduct_interview_tool(script_file: str = "/home/salma/college/nueral_networ
         print(f"Error loading script file: {e}")
         return {"interactions": []}
     
-    questions = [line['line'] for line in script_data['script']]
+    questions = [q['question'] for q in script_data['questions']]
     if not questions:
         print("Error: No questions found in script file")
         return {"interactions": []}
@@ -245,30 +246,32 @@ def conduct_interview_tool(script_file: str = "/home/salma/college/nueral_networ
 
         # Record response with VAD
         response_file = os.path.join(output_dir, f"response_{i}.wav")
-        print("Recording started. Please speak now (or simulating response for remote execution).")
+        print("Recording started. Please speak now.")
         try:
             record_audio_vad(response_file)
             print(f"Recording stopped: {response_file}")
         except Exception as e:
             print(f"Error recording audio: {e}")
-            # Simulate a response for testing in remote environment
-            transcription = f"Simulated response for question {i} due to missing audio input"
+            transcription = f"Error recording response for question {i}"
             interactions.append({
                 "question": question,
                 "audio_file": audio_file,
                 "response_audio_file": response_file,
                 "transcribed_response": transcription
             })
-            print(f"Simulated interaction: {interactions[-1]}")
             continue
 
-        # Transcribe response
-        try:
-            transcription = speech_to_text(response_file)
-            print(f"Transcription: {transcription}")
-        except Exception as e:
-            print(f"Error transcribing: {e}")
-            transcription = "Transcription failed"
+        # Check if response file exists before transcription
+        if not os.path.exists(response_file):
+            print(f"Response file not found: {response_file}")
+            transcription = "No audio file available for transcription"
+        else:
+            try:
+                transcription = speech_to_text(response_file)
+                print(f"Transcription: {transcription}")
+            except Exception as e:
+                print(f"Error transcribing: {e}")
+                transcription = "Transcription failed"
 
         # Store interaction
         interaction = {
@@ -281,7 +284,6 @@ def conduct_interview_tool(script_file: str = "/home/salma/college/nueral_networ
         print(f"Interaction recorded: {interaction}")
 
     print(f"Total interactions recorded: {len(interactions)}")
-    # Manually save interactions to ensure step_10_interview_session.json is populated
     session_file = os.path.join(output_dir, "step_10_interview_session.json")
     try:
         with open(session_file, 'w', encoding='utf-8') as f:
@@ -324,7 +326,6 @@ evaluation_agent = Agent(
     verbose=True
 )
 
-
 # Evaluation Task
 evaluation_task = Task(
     description="\n".join([
@@ -339,8 +340,6 @@ evaluation_task = Task(
     output_file=os.path.join(output_dir, "step_11_interview_report.json"),
     agent=evaluation_agent
 )
-
-
 
 # Interview Conductor Task
 interview_conductor_task = Task(
@@ -360,10 +359,6 @@ crew = Crew(
     tasks=[interview_conductor_task, evaluation_task],
     process=Process.sequential
 )
-
-
-
-
 
 # Run the crew
 if __name__ == "__main__":
