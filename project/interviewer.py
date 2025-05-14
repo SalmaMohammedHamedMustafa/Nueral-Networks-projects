@@ -20,8 +20,11 @@ nest_asyncio.apply()  # Enable nested async loops for compatibility
 
 # --- Initialize Clients and LLMs ---
 search_client = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
-llm = LLM(model="gpt-4o-mini", temperature=0)  # Basic LLM for most agents
-llm_advanced = LLM(model="gpt-4o", temperature=0)  # Advanced LLM for question generation
+llm = LLM(
+    model ='gemini/gemini-2.5-flash-preview-04-17',
+    temperature=0,
+    api_key=os.environ["GOOGLE_API_KEY"]
+)
 
 # --- Data Models ---
 class JobAnalysis(BaseModel):
@@ -240,17 +243,61 @@ web_scraper_task = Task(
 )
 
 # **Question Generator Agent**
+task_description = (
+    "1. Load and analyze scraped job requirements from 'step_4_scraped_data.json' for the target {job_position} and optional {company_name}.\n"
+    "2. Extract domain-specific knowledge graph including:\n"
+    "   • Primary technology stack components (languages, frameworks, databases, infrastructure)\n"
+    "   • Secondary technical requirements and experience thresholds\n"
+    "   • Architecture patterns and methodologies mentioned\n"
+    "   • Industry-specific tools and platforms\n"
+    "3. Generate 6-10 contextually relevant interview questions in Egyptian Arabic with embedded English technical terminology:\n"
+    "   • 3-4 Technical depth questions targeting expertise in primary stack components:\n"
+    "     - Focus on implementation-level details rather than conceptual definitions\n"
+    "     - Reference specific API interfaces, configuration options, or performance characteristics\n"
+    "     - Incorporate domain-specific edge cases or optimization techniques\n"
+    "   • 2-3 System design or architectural questions that mirror actual production challenges:\n"
+    "     - Include concrete constraints (e.g., 'system handles 3000 req/s with p99 latency < 100ms')\n"
+    "     - Reference actual services or technologies from the job description\n"
+    "     - Require trade-off analysis between competing architectural approaches\n"
+    "   • If 'include_ps' flag is True, include 1-2 problem-solving exercises that:\n"
+    "     - Are calibrated to senior/staff-level complexity (not basic algorithms)\n"
+    "     - Include real-world constraints and edge cases\n"
+    "     - Provide specific inputs, expected outputs, and performance requirements\n"
+    "4. Calibrate difficulty distribution precisely:\n"
+    "   • 30% L3 (mid-level) difficulty: Tests foundational knowledge and basic implementation\n"
+    "   • 40% L4 (senior) difficulty: Requires deep technical expertise and experience with edge cases\n"
+    "   • 30% L5 (staff) difficulty: Demands systems thinking and advanced optimization knowledge\n"
+    "5. Incorporate MENA-specific technology context:\n"
+    "   • Reference regional cloud providers or compliance requirements if applicable\n"
+    "   • Consider local infrastructure challenges or technology adoption patterns\n"
+    "   • Adapt terminology to reflect local tech ecosystem conventions\n"
+    "6. Output must strictly conform to the InterviewScript JSON schema with each question object including:\n"
+    "   • 'question': The actual interview question in Egyptian Arabic with embedded English terms\n"
+    "   • 'type': One of ['technical_depth', 'system_design', 'problem_solving']\n"
+    "   • 'difficulty': One of ['L3', 'L4', 'L5']\n"
+    "   • 'domain_context': Brief explanation of why this question is relevant to the position\n"
+    "   • 'expected_insights': Key technical concepts a strong candidate would address\n"
+)
+
 question_generator_agent = Agent(
     role="Enhanced Question Generator",
-    goal="Craft interview questions based on scraped data.",
-    backstory="Translates job specs into high-fidelity interview prompts for MENA tech trends.",
-    llm=llm_advanced,
+    goal=(
+        "- Craft interview questions deeply rooted in real-world job scenarios and current MENA tech trends.\n"
+        "- Leverage scraped data to ensure relevance to {job_position} and {company_name}.\n"
+        "- Facilitate seamless Validator review by producing clear, context-rich prompts."
+    ),
+    backstory=(
+        "This agent powers TechInterviewerAI’s core Q&A module, specializing in translating raw job specs into high-fidelity interview prompts."
+    ),
+    llm=llm,
     verbose=True
 )
 
 question_generator_task = Task(
-    description="Generate 5-10 interview questions in Egyptian Arabic based on step_4_scraped_data.json.",
-    expected_output="JSON object with interview questions.",
+    description=task_description,
+    expected_output=(
+        "A JSON object matching InterviewScript: an array of 5–10 questions, each with 'question', 'type', and 'difficulty'."
+    ),
     output_json=InterviewScript,
     output_file=os.path.join(output_dir, "step_5_interview_script.json"),
     agent=question_generator_agent
