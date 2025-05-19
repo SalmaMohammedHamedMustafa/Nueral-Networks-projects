@@ -2,38 +2,38 @@
 
 ## Project Overview
 
-InterviewAI is an AI-powered technical interview system designed for Arabic-speaking job seekers in the MENA tech market. The system can process job descriptions, generate relevant technical interview questions in Egyptian Arabic, conduct the interview through speech synthesis and voice recognition, and evaluate responses.
+InterviewAI is an AI-powered technical interview platform for Arabic-speaking candidates in the MENA tech market. It processes job descriptions, generates Egyptian Arabic interview questions, conducts interviews with speech synthesis and recognition, and evaluates responses.
 
 ## Components
 
-The system consists of several interconnected components:
-
-1. **Email Integration System** (`check_email.py`): Monitors an email inbox for incoming SSH key submissions, downloads attachments, and triggers subsequent processing.
-
-2. **Job Analysis and Question Generation** (`interviewer.py`): Analyzes job descriptions to identify technical skills and requirements, searches for relevant interview questions, and generates a tailored interview script in Egyptian Arabic.
-
-3. **Interview Conductor** (`conductor.py`): Uses the generated script to conduct the actual interview, converting text to speech in Arabic, recording and transcribing candidate responses, and evaluating performance.
+1. **Email Integration System** (`check_email.py`): Monitors emails for SSH key submissions, downloads attachments, and triggers processing.
+2. **Job Analysis and Question Generation** (`interviewer.py`): Analyzes job details, searches for questions, and creates tailored interview scripts.
+3. **Interview Conductor** (`conductor.py`): Executes interviews with Google TTS, WebRTC VAD recording, OpenAI Whisper transcription, and evaluation.
 
 ## Features
 
-- Email monitoring for automated interview setup
-- Job description analysis for targeted questions
-- Text-to-speech in Egyptian Arabic
-- Voice Activity Detection (VAD) for natural conversation flow
+- Email-based interview setup
+- Targeted question generation from job descriptions
+- Egyptian Arabic text-to-speech
+- Voice Activity Detection (VAD)
 - Speech-to-text transcription
 - Automated response evaluation
-- SSH key processing capability
+- SSH key processing
 
 ## System Architecture
 
 ```
-+----------------+     +----------------+     +----------------+
-| Email Monitor  |     | Interviewer    |     | Conductor      |
-| check_email.py |---->| interviewer.py |---->| conductor.py   |
-+----------------+     +----------------+     +----------------+
-      |                       |                      |
-      v                       v                      v
-  SSH Keys              Question Script        Interview Results
++----------------+     +----------------+     +----------------+     +----------------+
+| Web Interface  |     | System Detects |     | Script Generator|     | Conductor      |
+| Interviewee    |---->| Periodic Check |---->| Generates Script|---->| Conducts Interview|
+| Applies via Web|     | for Requests   |     | from Job Desc  |     | & Outputs Report |
++----------------+     +----------------+     +----------------+     +----------------+
+                                                            |
+                                                            v
+                                                    +----------------+
+                                                    | User Gets Temp |
+                                                    | Machine Access |
+                                                    +----------------+
 ```
 
 ## Setup Instructions
@@ -41,14 +41,14 @@ The system consists of several interconnected components:
 ### Prerequisites
 
 - Python 3.8+
-- Google Cloud account with Text-to-Speech API enabled
+- Google Cloud Text-to-Speech API
 - OpenAI API key
 - Tavily API key
-- Gmail account with App Password
+- Gmail with App Password
 
 ### Installation
 
-1. Clone the repository:
+1. Clone the repo:
    ```bash
    git clone https://github.com/SalmaMohammedHamedMustafa/Nueral-Networks-projects.git
    cd interviewai
@@ -59,76 +59,54 @@ The system consists of several interconnected components:
    pip install -r req.txt
    ```
 
-3. Set up environment variables:
+3. Set environment variables:
    ```bash
-   export GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/credentials.json
-   export OPENAI_API_KEY=your_openai_api_key
-   export TAVILY_API_KEY=your_tavily_api_key
-   export GOOGLE_API_KEY=your_google_api_key
-   export GEMINI_API_KEY=your_gemini_api_key
+   export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
+   export OPENAI_API_KEY=your_openai_key
+   export TAVILY_API_KEY=your_tavily_key
+   export GOOGLE_API_KEY=your_google_key
+   export GEMINI_API_KEY=your_gemini_key
    ```
 
 ### Configuration
 
-1. Update email settings in `check_email.py`:
-   - Replace `EMAIL` with your Gmail address
-   - Replace `APP_PASSWORD` with your Gmail App Password
-   - Update `USERNAME` with your system username
-
-2. Update file paths in all scripts:
-   - Replace credential paths
-   - Update output directories
+- Update `check_email.py` with your Gmail address, App Password, and system username.
+- Adjust file paths in scripts for credentials and output directories.
 
 ## Usage
 
-### Starting the Email Monitor
-
+### Start Email Monitor
 ```bash
 python check_email.py
 ```
+Monitors for "SSH Key Submission from [name]" emails and processes JSON attachments.
 
-The system will monitor the specified email inbox for messages with the subject "SSH Key Submission from [name]" and process any JSON attachments.
-
-### Running the Interview Process Directly
-
-1. Generate interview questions:
+### Run Interview Process
+1. Generate script:
    ```bash
    python interviewer.py --job-description "Your job description here"
    ```
-   
-   Alternatively, you can provide a JSON file:
+   Or with JSON:
    ```bash
    python interviewer.py --json-file path/to/info.json
    ```
 
-2. Conduct the interview:
+2. Conduct interview:
    ```bash
    python conductor.py
    ```
 
 ## Output Files
 
-The system generates several output files during operation:
-
-- `info.json`: Contains extracted job information
-- `interviewer_script.json`: Generated interview questions
-- `ai-agent-output/step_10_interview_session.json`: Record of the interview session
+- `info.json`: Job details
+- `interviewer_script.json`: Interview questions
+- `ai-agent-output/step_10_interview_session.json`: Session data
 - `ai-agent-output/step_11_interview_report.json`: Evaluation report
-- `email_downloader.log`: Log file for the email monitoring service
+- `email_downloader.log`: Email monitoring log
 
-## Example Job Description JSON
-
-```json
-{
-  "username": "candidate",
-  "email": "candidate@example.com",
-  "jobDescription": "Job title: LLM Engineer\n\nRequirements: Experience with Python, PyTorch, and Hugging Face. Knowledge of transformer architectures and fine-tuning methods. Experience with REST APIs and cloud deployment.",
-  "sshKey": "ssh-rsa AAAA..."
-}
-```
 
 ## Security Notes
 
-- The system processes SSH keys, so ensure proper security measures are in place
-- Avoid committing API keys and credentials to version control
-- The email password in `check_email.py` should be an App Password, not your main account password
+- Secure SSH key handling is critical.
+- Avoid committing API keys or credentials to version control.
+- Use Gmail App Password in `check_email.py`, not your main password.
