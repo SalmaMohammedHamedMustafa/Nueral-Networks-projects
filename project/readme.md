@@ -5,7 +5,7 @@
 InterviewAI is an AI-powered technical interview platform for Arabic-speaking candidates in the MENA tech market. It processes job descriptions, generates Egyptian Arabic interview questions, conducts interviews with speech synthesis and recognition, and evaluates responses.
 
 ## Components
-
+1. **Web Interface** for name ,email,job details, SSH submissions.
 1. **Email Integration System** (`check_email.py`): Monitors emails for SSH key submissions, downloads attachments, and triggers processing.
 2. **Job Analysis and Question Generation** (`interviewer.py`): Analyzes job details, searches for questions, and creates tailored interview scripts.
 3. **Interview Conductor** (`conductor.py`): Executes interviews with Google TTS, WebRTC VAD recording, OpenAI Whisper transcription, and evaluation.
