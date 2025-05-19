@@ -132,9 +132,3 @@ The system generates several output files during operation:
 - The system processes SSH keys, so ensure proper security measures are in place
 - Avoid committing API keys and credentials to version control
 - The email password in `check_email.py` should be an App Password, not your main account password
-
-## Troubleshooting
-
-- **API Errors**: Verify your API keys are correctly set and have sufficient permissions
-- **Audio Issues**: Check that your microphone is properly configured and accessible
-- **Path Errors**: Ensure all file paths in the scripts match your actual directory structure
